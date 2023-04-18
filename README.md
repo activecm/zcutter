@@ -2,8 +2,8 @@
 
 # zcutter, compatible with zeek-cut (formerly bro-cut)
 
-	This is a python script that, like zeek-cut, handles the 
-task of extracting specific columns from zeek-logs.
+This is a python script that, like zeek-cut, handles the task of
+extracting specific columns from zeek-logs.
 
 ## Primary differences
 - zcutter is a standalone python script with no dependencies other than
@@ -27,7 +27,8 @@ chmod 755 zcutter.py
 if ! type zeek-cut >/dev/null 2>&1 ; then ln -s zcutter.py zeek-cut ; fi
 ```
 
-	To see the command line options:
+To see the command line options:
+
 `zcutter.py -h`
 
 
