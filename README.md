@@ -1,11 +1,11 @@
 
 
-#zcutter, compatible with zeek-cut (formerly bro-cut)
+# zcutter, compatible with zeek-cut (formerly bro-cut)
 
 	This is a python script that, like zeek-cut, handles the 
-task of extracting specific columns from zeek-logs.  Primary differences:
+task of extracting specific columns from zeek-logs.
 
-
+## Primary differences
 - zcutter is a standalone python script with no dependencies other than
 python3 (which should be on all Linuxes.)
 
@@ -18,13 +18,26 @@ TSV, and json.  Compressed files will be automatically decompressed on
 the fly and deleted when done.
 
 
-#Notes
+# Quickstart
+`
+mkdir -p ~/bin/
+cd ~/bin/
+wget https://raw.githubusercontent.com/activecm/zcutter/main/zcutter.py -O zcutter.py
+chmod 755 zcutter.py
+if ! type zeek-cut >/dev/null 2>&1 ; then ln -s zcutter.py zeek-cut ; fi
+`
+
+	To see the command line options:
+`zcutter.py -h`
+
+
+# Notes
 - For Python 3.5, use zcutter-stripped.py .  (Python 3.6 and above use zcutter.py)
 
 
-References:
-https://github.com/activecm/zcutter/
-https://github.com/zeek/zeek-aux/
+# References
+[zcutter](https://github.com/activecm/zcutter/)
+[zeek-cut repository](https://github.com/zeek/zeek-aux/)
 
 
 
