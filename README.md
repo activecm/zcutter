@@ -19,13 +19,13 @@ the fly and deleted when done.
 
 
 # Quickstart
-`
+```
 mkdir -p ~/bin/
 cd ~/bin/
 wget https://raw.githubusercontent.com/activecm/zcutter/main/zcutter.py -O zcutter.py
 chmod 755 zcutter.py
 if ! type zeek-cut >/dev/null 2>&1 ; then ln -s zcutter.py zeek-cut ; fi
-`
+```
 
 	To see the command line options:
 `zcutter.py -h`
