@@ -5,7 +5,7 @@
 #Released under the GPL
 
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2016-2023, William Stearns'
@@ -30,9 +30,643 @@ import gzip				#Opening gzip compressed files
 import json				#Reading json formatted files
 from typing import Dict, List
 
-from zeeklogs import header_lines, field_name_lists, field_type_lists
+
+
+
+#======== Constants
+raw_header_blocks = [
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	app_stats
+#open	0000-00-00-00-00-00
+#fields	ts	ts_delta	app	uniq_hosts	hits	bytes
+#types	time	interval	string	count	count	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	broker
+#open	0000-00-00-00-00-00
+#fields	ts	ty	ev	peer.address	peer.bound_port	message
+#types	time	enum	string	string	port	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	capture_loss
+#open	0000-00-00-00-00-00
+#fields	ts	ts_delta	peer	gaps	acks	percent_lost
+#types	time	interval	string	count	count	double
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	cluster
+#open	0000-00-00-00-00-00
+#fields	ts	node	message
+#types	time	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	communication
+#open	0000-00-00-00-00-00
+#fields	ts	peer	src_name	connected_peer_desc	connected_peer_addr	connected_peer_port	level	message
+#types	time	string	string	string	addr	port	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn
+#open	0000-00-00-00-00-00
+#fields	_node_name	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents
+#types	string	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn_red
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents	orig_cc	resp_cc	orig_l2_addr	resp_l2_addr	vlan	inner_vlan	community_id
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]	string	string	string	string	int	int	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	corelight_burst
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	orig_size	resp_size	mbps	age_of_conn
+#types	time	string	addr	port	addr	port	enum	count	count	double	interval
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	datared
+#open	0000-00-00-00-00-00
+#fields	ts	conn_red	conn_total	dns_red	dns_total	dns_coal_miss	files_red	files_total	files_coal_miss	http_red	http_total	ssl_red	ssl_total	ssl_coal_miss	weird_red	weird_total	x509_red	x509_total	x509_coal_miss
+#types	time	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dce_rpc
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	rtt	named_pipe	endpoint	operation
+#types	time	string	addr	port	addr	port	interval	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dhcp
+#open	0000-00-00-00-00-00
+#fields	ts	uids	client_addr	server_addr	mac	host_name	client_fqdn	domain	requested_addr	assigned_addr	lease_time	client_message	server_message	msg_types	duration
+#types	time	set[string]	addr	addr	string	string	string	string	addr	addr	interval	string	string	vector[string]	interval
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dnp3
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	fc_request	fc_reply	iin
+#types	time	string	addr	port	addr	port	string	string	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dns
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	trans_id	rtt	query	qclass	qclass_name	qtype	qtype_name	rcode	rcode_name	AA	TC	RD	RA	Z	answers	TTLs	rejected
+#types	time	string	addr	port	addr	port	enum	count	interval	string	count	string	count	string	count	string	bool	bool	bool	bool	count	vector[string]	vector[interval]	bool
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dns_red
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	query	qtype_name	rcode	answers	num
+#types	time	string	addr	port	addr	port	string	string	count	vector[string]	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dpd
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	analyzer	failure_reason
+#types	time	string	addr	port	addr	port	enum	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	etc_viz
+#open	0000-00-00-00-00-00
+#fields	uid	server_a	server_p	service	viz_stat	c2s_viz.size	c2s_viz.enc_dev	c2s_viz.enc_frac	c2s_viz.pdu1_enc	c2s_viz.clr_frac	c2s_viz.clr_ex	s2c_viz.size	s2c_viz.enc_dev	s2c_viz.enc_frac	s2c_viz.pdu1_enc	s2c_viz.clr_frac	s2c_viz.clr_ex
+#types	string	addr	port	set[string]	string	count	double	double	bool	double	string	count	double	double	bool	double	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	files
+#open	0000-00-00-00-00-00
+#fields	ts	fuid	tx_hosts	rx_hosts	conn_uids	source	depth	analyzers	mime_type	filename	duration	local_orig	is_orig	seen_bytes	total_bytes	missing_bytes	overflow_bytes	timedout	parent_fuid	md5	sha1	sha256	extracted	extracted_cutoff	extracted_size
+#types	time	string	set[addr]	set[addr]	set[string]	string	count	set[string]	string	string	interval	bool	bool	count	count	count	count	bool	string	string	string	string	string	bool	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	files_red
+#open	0000-00-00-00-00-00
+#fields	ts	fuid	tx_hosts	rx_hosts	conn_uids	source	depth	analyzers	mime_type	filename	local_orig	is_orig	seen_bytes	total_bytes	missing_bytes	overflow_bytes	timedout	parent_fuid	extracted	extracted_cutoff	extracted_size	md5	sha1	sha256	num
+#types	vector[time]	string	set[addr]	set[addr]	set[string]	string	count	set[string]	string	string	bool	bool	count	count	count	count	bool	string	set[string]	bool	count	string	string	string	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	ftp
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	user	password	command	arg	mime_type	file_size	reply_code	reply_msg	data_channel.passive	data_channel.orig_h	data_channel.resp_h	data_channel.resp_p	fuid
+#types	time	string	addr	port	addr	port	string	string	string	string	string	count	count	string	bool	addr	addr	port	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	http
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	trans_depth	method	host	uri	referrer	version	user_agent	origin	request_body_len	response_body_len	status_code	status_msg	info_code	info_msg	tags	username	password	proxied	orig_fuids	orig_filenames	orig_mime_types	resp_fuids	resp_filenames	resp_mime_types
+#types	time	string	addr	port	addr	port	count	string	string	string	string	string	string	string	count	count	count	string	count	string	set[enum]	string	string	set[string]	vector[string]	vector[string]	vector[string]	vector[string]	vector[string]	vector[string]
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	http_red
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	trans_depth	method	host	uri	referrer	version	user_agent	request_body_len	response_body_len	status_code	status_msg	info_code	info_msg	tags	username	password	proxied	orig_fuids	orig_filenames	orig_mime_types	resp_fuids	resp_filenames	resp_mime_types	post_body
+#types	time	string	addr	port	addr	port	count	string	string	string	string	string	string	count	count	count	string	count	string	set[enum]	string	string	set[string]	vector[string]	vector[string]	vector[string]	vector[string]	vector[string]	vector[string]	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	intel
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	seen.indicator	seen.indicator_type	seen.where	matched	sources	fuid	file_mime_type	file_desc
+#types	time	string	addr	port	addr	port	string	enum	enum	set[enum]	set[string]	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	irc
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	nick	user	command	value	addl	dcc_file_name	dcc_file_size	dcc_mime_type	fuid
+#types	time	string	addr	port	addr	port	string	string	string	string	string	string	count	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	kerberos
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	request_type	client	service	success	error_msg	from	till	cipher	forwardable	renewable	client_cert_subject	client_cert_fuid	server_cert_subject	server_cert_fuid
+#types	time	string	addr	port	addr	port	string	string	string	bool	string	time	time	string	bool	bool	string	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	known_certs
+#open	0000-00-00-00-00-00
+#fields	ts	host	port_num	subject	issuer_subject	serial
+#types	time	addr	port	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	known_hosts
+#open	0000-00-00-00-00-00
+#fields	ts	host
+#types	time	addr
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	known_services
+#open	0000-00-00-00-00-00
+#fields	ts	host	port_num	port_proto	service
+#types	time	addr	port	enum	set[string]
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	modbus
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	func	exception
+#types	time	string	addr	port	addr	port	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	mqtt_connect
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto_name	proto_version	client_id	connect_status	will_topic	will_payload
+#types	time	string	addr	port	addr	port	string	string	string	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	mqtt_publish
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	from_client	retain	qos	status	topic	payload	payload_len
+#types	time	string	addr	port	addr	port	bool	bool	string	string	string	string	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	mqtt_subscribe
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	action	topics	qos_levels	granted_qos_level	ack
+#types	time	string	addr	port	addr	port	enum	vector[string]	vector[count]	count	bool
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	mysql
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	cmd	arg	success	rows	response
+#types	time	string	addr	port	addr	port	string	string	bool	count	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	namecache
+#open	0000-00-00-00-00-00
+#fields	ts	lookups	hit_rate_conn	hit_rate_conn_orig_h	hit_rate_conn_resp_h	hit_rate_conn_prod	hit_rate_conn_prod_orig_h	hit_rate_conn_prod_resp_h	hit_rate_conn_int_h	hit_rate_conn_ext_h	src_dns_a	src_dns_aaaa	src_dns_a6	src_dns_ptr	src_unknown	cache_entries	cache_add_tx_ev	cache_add_tx_mpg	cache_add_rx_ev	cache_add_rx_mpg	cache_add_rx_new	cache_del_mpg
+#types	time	count	double	double	double	double	double	double	double	double	count	count	count	count	count	count	count	count	count	count	count	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	notice
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	fuid	file_mime_type	file_desc	proto	note	msg	sub	src	dst	p	n	peer_descr	actions	email_dest	suppress_for	remote_location.country_code	remote_location.region	remote_location.city	remote_location.latitude	remote_location.longitude
+#types	time	string	addr	port	addr	port	string	string	string	enum	enum	string	string	addr	addr	port	count	string	set[enum]	set[string]	interval	string	string	string	double	double
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	ntlm
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	username	hostname	domainname	server_nb_computer_name	server_dns_computer_name	server_tree_name	success
+#types	time	string	addr	port	addr	port	string	string	string	string	string	string	bool
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	ntp
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	version	mode	stratum	poll	precision	root_delay	root_disp	ref_id	ref_time	org_time	rec_time	xmt_time	num_exts
+#types	time	string	addr	port	addr	port	count	count	count	interval	interval	interval	interval	string	time	time	time	time	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	ocsp
+#open	0000-00-00-00-00-00
+#fields	ts	id	hashAlgorithm	issuerNameHash	issuerKeyHash	serialNumber	certStatus	revoketime	revokereason	thisUpdate	nextUpdate
+#types	time	string	string	string	string	string	string	time	string	time	time
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	open_conn
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	packet_filter
+#open	0000-00-00-00-00-00
+#fields	ts	node	filter	init	success
+#types	time	string	string	bool	bool
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	pe
+#open	0000-00-00-00-00-00
+#fields	ts	id	machine	compile_ts	os	subsystem	is_exe	is_64bit	uses_aslr	uses_dep	uses_code_integrity	uses_seh	has_import_table	has_export_table	has_cert_table	has_debug_data	section_names
+#types	time	string	string	time	string	string	bool	bool	bool	bool	bool	bool	bool	bool	bool	bool	vector[string]
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	radius
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	username	mac	framed_addr	remote_ip	connect_info	reply_msg	result	ttl
+#types	time	string	addr	port	addr	port	string	string	addr	addr	string	string	string	interval
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	rdp
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	cookie	result	security_protocol	keyboard_layout	client_build	client_name	client_dig_product_id	desktop_width	desktop_height	requested_color_depth	cert_type	cert_count	cert_permanent	encryption_level	encryption_method
+#types	time	string	addr	port	addr	port	string	string	string	string	string	string	string	count	count	string	string	count	bool	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	reporter
+#open	0000-00-00-00-00-00
+#fields	ts	level	message	location
+#types	time	enum	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	rfb
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	client_major_version	client_minor_version	server_major_version	server_minor_version	authentication_method	auth	share_flag	desktop_name	width	height
+#types	time	string	addr	port	addr	port	string	string	string	string	string	bool	bool	string	count	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	signatures
+#open	0000-00-00-00-00-00
+#fields	ts	uid	src_addr	src_port	dst_addr	dst_port	note	sig_id	event_msg	sub_msg	sig_count	host_count
+#types	time	string	addr	port	addr	port	enum	string	string	string	count	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	sip
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	trans_depth	method	uri	date	request_from	request_to	response_from	response_to	reply_to	call_id	seq	subject	request_path	response_path	user_agent	status_code	status_msg	warning	request_body_len	response_body_len	content_type
+#types	time	string	addr	port	addr	port	count	string	string	string	string	string	string	string	string	string	string	string	vector[string]	vector[string]	string	count	string	string	count	count	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	smb_files
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	fuid	action	path	name	size	prev_name	times.modified	times.accessed	times.created	times.changed	data_offset_req	data_len_req	data_len_rsp
+#types	time	string	addr	port	addr	port	string	enum	string	string	count	string	time	time	time	time	count	count	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	smb_mapping
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	path	service	native_file_system	share_type
+#types	time	string	addr	port	addr	port	string	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	smtp
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	trans_depth	helo	mailfrom	rcptto	date	from	to	cc	reply_to	msg_id	in_reply_to	subject	x_originating_ip	first_received	second_received	last_reply	path	user_agent	tls	fuids	is_webmail
+#types	time	string	addr	port	addr	port	count	string	string	set[string]	string	string	set[string]	set[string]	string	string	string	string	addr	string	string	string	vector[addr]	string	bool	vector[string]	bool
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	snmp
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	duration	version	community	get_requests	get_bulk_requests	get_responses	set_requests	display_string	up_since
+#types	time	string	addr	port	addr	port	interval	string	string	count	count	count	count	string	time
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	socks
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	version	user	password	status	request.host	request.name	request_p	bound.host	bound.name	bound_p
+#types	time	string	addr	port	addr	port	count	string	string	string	addr	string	port	addr	string	port
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	software
+#open	0000-00-00-00-00-00
+#fields	ts	host	host_p	software_type	name	version.major	version.minor	version.minor2	version.minor3	version.addl	unparsed_version
+#types	time	addr	port	enum	string	count	count	count	count	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	ssh
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	version	auth_success	auth_attempts	direction	client	server	cipher_alg	mac_alg	compression_alg	kex_alg	host_key_alg	host_key
+#types	time	string	addr	port	addr	port	count	bool	count	enum	string	string	string	string	string	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	ssl
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	version	cipher	curve	server_name	resumed	last_alert	next_protocol	established	ssl_history	cert_chain_fps	client_cert_chain_fps	sni_matches_cert	validation_status	ja3	ja3s
+#types	time	string	addr	port	addr	port	string	string	string	string	bool	string	string	bool	string	vector[string]	vector[string]	bool	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	ssl_red
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	version	cipher	curve	server_name	resumed	last_alert	next_protocol	established	cert_chain_fuids	client_cert_chain_fuids	subject	issuer	client_subject	client_issuer	validation_status	ja3	ja3s
+#types	time	string	addr	port	addr	port	string	string	string	string	bool	string	string	bool	vector[string]	vector[string]	string	string	string	string	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	stats
+#open	0000-00-00-00-00-00
+#fields	ts	peer	mem	pkts_proc	bytes_recv	pkts_dropped	pkts_link	pkt_lag	events_proc	events_queued	active_tcp_conns	active_udp_conns	active_icmp_conns	tcp_conns	udp_conns	icmp_conns	timers	active_timers	files	active_files	dns_requests	active_dns_requests	reassem_tcp_size	reassem_file_size	reassem_frag_size	reassem_unknown_size
+#types	time	string	count	count	count	count	count	interval	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count	count
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	syslog
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	facility	severity	message
+#types	time	string	addr	port	addr	port	enum	string	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	traceroute
+#open	0000-00-00-00-00-00
+#fields	ts	src	dst	proto
+#types	time	addr	addr	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	tunnel
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	tunnel_type	action
+#types	time	string	addr	port	addr	port	enum	enum
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	weird
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	weird_red
+#open	0000-00-00-00-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
+#types	time	string	addr	port	addr	port	string	string	bool	string
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	x509
+#open	0000-00-00-00-00-00
+#fields	ts	fingerprint	certificate.version	certificate.serial	certificate.subject	certificate.issuer	certificate.not_valid_before	certificate.not_valid_after	certificate.key_alg	certificate.sig_alg	certificate.key_type	certificate.key_length	certificate.exponent	certificate.curve	san.dns	san.uri	san.email	san.ip	basic_constraints.ca	basic_constraints.path_len	host_cert	client_cert
+#types	time	string	count	string	string	string	time	time	string	string	string	count	string	string	vector[string]	vector[string]	vector[string]	vector[addr]	bool	count	bool	bool
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	x509_red
+#open	0000-00-00-00-00-00
+#fields	ts	id	certificate.version	certificate.serial	certificate.subject	certificate.issuer	certificate.not_valid_before	certificate.not_valid_after	certificate.key_alg	certificate.sig_alg	certificate.key_type	certificate.key_length	certificate.exponent	certificate.curve	san.dns	san.uri	san.email	san.ip	basic_constraints.ca	basic_constraints.path_len
+#types	time	string	count	string	string	string	time	time	string	string	string	count	string	string	vector[string]	vector[string]	vector[string]	vector[addr]	bool	count
+#close	9999-12-31-23-59-59"""
+]
+
+
+
+
+
 
 #======== Functions
+def register_header_block():
+	"""Load in a header block from a TSV format zeek log."""
+
+	local_header_lines = {}		#Keys are file_type, values are lists of header strings
+	local_field_name_lists = {}		#Keys are file_type, values are lists of field names
+	local_field_type_lists = {}		#Keys are file_type, values are lists of field types
+	#master_types = {}		#keys are file_type, values are dictionaries of field->type.
+
+	for hb in raw_header_blocks:
+
+		h_list = hb.split('\n')
+
+		pared_h_list = []
+
+		file_type = ''
+		field_list = []
+		type_list = []
+		for one_line in h_list:
+			if one_line.startswith('#path'):
+				file_type = one_line.split('\t')[1]
+				#print("==== " + file_type)
+			elif one_line.startswith('#fields'):
+				field_list = one_line.split('\t')[1:]
+			elif one_line.startswith('#types'):
+				type_list = one_line.split('\t')[1:]
+
+			#if not one_line.startswith(('#open', '#close')):
+			pared_h_list.append(one_line)
+
+		assert len(field_list) == len(type_list)
+
+		#if field_list and type_list:
+		#	if file_type not in master_types:
+		#		master_types[file_type] = {}
+		#	types_of = dict(zip(field_list, type_list))
+		#	for field_name, field_type in types_of.items():
+		#		master_types[file_type][field_name] = field_type
+		#else:
+		#	print(file_type + " is missing one or both of field and type lines.")
+
+		if file_type:
+			if file_type in local_header_lines:
+				sys.stderr.write(file_type + " being added twice in zeeklogs.py .\n")
+				sys.stderr.flush()
+			local_header_lines[file_type] = pared_h_list
+			local_field_name_lists[file_type] = field_list
+			local_field_type_lists[file_type] = type_list
+		else:
+			sys.stderr.write("No #path line or missing #path value in zeeklogs.py .\n")
+			sys.stderr.flush()
+
+		#print(str(h_list))
+
+	return (local_header_lines, local_field_name_lists, local_field_type_lists)
+
+
+
 def Debug(DebugStr):
 	"""Prints a note to stderr"""
 
@@ -123,7 +757,7 @@ def process_log_lines(log_file, requested_fields, cl_args):
 					fail('Unrecognized starting line in ' + log_file)
 
 
-			if (cl_args['allheaders'] or cl_args['allminheaders'] or ((cl_args['firstheaders'] or cl_args['firstminheaders']) and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_type == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
+			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_type == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
 				#We're inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
 				field_dict = json.loads(raw_line)
 
@@ -206,7 +840,7 @@ def process_log_lines(log_file, requested_fields, cl_args):
 					if not (cl_args['allminheaders'] or cl_args['firstminheaders']):
 						out_line = raw_line
 
-				if not (cl_args['allheaders'] or cl_args['allminheaders'] or ((cl_args['firstheaders'] or cl_args['firstminheaders']) and process_log_lines.data_line_seen is False)):
+				if not (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)):
 					out_line = ''
 				if cl_args['json']:
 					out_line = ''
@@ -356,8 +990,19 @@ if __name__ == "__main__":
 	if args['dateformat'] != '%FT%T+0000':
 		args['readabledate'] = True
 
-	field_list = args['fields']
-	Debug('Requesting these columns: ' + str(field_list))
+	args['_hdr'] = args['allheaders'] or args['allminheaders'] or args['firstheaders'] or args['firstminheaders']
+	args['_min_hdr'] = args['allminheaders'] or args['firstminheaders']
+	args['_one_hdr'] = args['firstheaders'] or args['firstminheaders']
+
+	if args['tsv'] and args['_hdr']:								#We only need the simulated header blocks if the output is forced to TSV and the user wants headers
+		header_lines, field_name_lists, field_type_lists = register_header_block()
+	else:
+		header_lines = {}
+		field_name_lists = {}
+		field_type_lists = {}
+
+	requested_field_list = args['fields']
+	Debug('Requesting these columns: ' + str(requested_field_list))
 
 	#MissingFieldWarning = ''
 
@@ -365,7 +1010,7 @@ if __name__ == "__main__":
 		args['read'].append('')
 
 	for one_file in args['read']:
-		process_log(one_file, field_list, args)
+		process_log(one_file, requested_field_list, args)
 
 	#if MissingFieldWarning:
 	#	sys.stderr.write(MissingFieldWarning)
