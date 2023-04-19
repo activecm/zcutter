@@ -22,6 +22,7 @@ the fly and deleted when done.
 ```
 mkdir -p ~/bin/
 cd ~/bin/
+wget https://raw.githubusercontent.com/activecm/zcutter/main/zeeklogs.py -O zeeklogs.py
 wget https://raw.githubusercontent.com/activecm/zcutter/main/zcutter.py -O zcutter.py
 chmod 755 zcutter.py
 if ! type zeek-cut >/dev/null 2>&1 ; then ln -s zcutter.py zeek-cut ; fi
@@ -37,7 +38,9 @@ To see the command line options:
 
 
 # References
-[zcutter](https://github.com/activecm/zcutter/)
+
+[zcutter repository](https://github.com/activecm/zcutter/)
+
 [zeek-cut repository](https://github.com/zeek/zeek-aux/)
 
 
