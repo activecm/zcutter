@@ -5,7 +5,7 @@
 #Released under the GPL
 
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2016-2023, William Stearns'
@@ -30,6 +30,7 @@ import gzip				#Opening gzip compressed files
 import json				#Reading json formatted files
 from typing import Dict, List
 
+from zeeklogs import header_lines, field_name_lists, field_type_lists
 
 #======== Functions
 def Debug(DebugStr: str) -> None:
@@ -82,6 +83,10 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 	if 'data_line_seen' not in process_log_lines.__dict__:
 		process_log_lines.data_line_seen = False
 
+	if 'tsv_headers_printed' not in process_log_lines.__dict__:
+		process_log_lines.tsv_headers_printed = False
+
+
 	file_type: str = ''
 
 	field_location: Dict[str, int] = {}							#Remembers in which column we can find a given field name.
@@ -97,11 +102,64 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 					file_type = 'tsv'
 				elif raw_line.startswith('{'):
 					file_type = 'json'
-					limited_fields = requested_fields.copy()
+					field_dict = json.loads(raw_line)
+					if "_path" in field_dict:
+						del field_dict["_path"]
+					if "_write_ts" in field_dict:
+						del field_dict["_write_ts"]
+					if requested_fields == []:
+						limited_fields = list(field_dict.keys())
+					elif cl_args['negate']:
+						for one_field in field_dict.keys():
+							if not one_field in requested_fields:
+								limited_fields.append(one_field)
+					else:
+						for one_field in requested_fields:
+							if one_field in field_dict.keys():
+								limited_fields.append(one_field)
 				elif raw_line.startswith('#separator'):
 					fail('Unrecognized separator in ' + log_file)
 				else:
 					fail('Unrecognized starting line in ' + log_file)
+
+
+			if (cl_args['allheaders'] or cl_args['allminheaders'] or ((cl_args['firstheaders'] or cl_args['firstminheaders']) and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_type == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
+				#We're inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
+				field_dict = json.loads(raw_line)
+
+				if "_path" in field_dict:
+					type_of = dict(zip(field_name_lists[field_dict["_path"]], field_type_lists[field_dict["_path"]]))
+					limited_types = []
+					for one_field in limited_fields:
+						limited_types.append(type_of[one_field])
+					for one_line in header_lines[field_dict["_path"]]:
+						if one_line.startswith('#fields'):
+							try:
+								if cl_args['allminheaders'] or cl_args['firstminheaders']:
+									print(cl_args['fieldseparator'].join(limited_fields))
+								else:
+									print('#fields' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_fields))
+							except (BrokenPipeError, KeyboardInterrupt):
+								sys.stderr.close()					#To avoid printing the BrokenPipeError warning
+								sys.exit(0)
+						elif not(cl_args['allminheaders'] or cl_args['firstminheaders']):
+							if one_line.startswith('#types'):
+								try:
+									print('#types' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_types))
+								except (BrokenPipeError, KeyboardInterrupt):
+									sys.stderr.close()					#To avoid printing the BrokenPipeError warning
+									sys.exit(0)
+							else:
+								try:
+									print(one_line)
+								except (BrokenPipeError, KeyboardInterrupt):
+									sys.stderr.close()					#To avoid printing the BrokenPipeError warning
+									sys.exit(0)
+				else:
+					fail("_path missing from first json record.")
+
+				process_log_lines.tsv_headers_printed = True
+
 
 			out_line = ''
 			if raw_line.startswith('#'):
@@ -176,12 +234,15 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 					out_line = data_line_of(limited_fields, out_fields, file_type, cl_args)
 				elif file_type == 'json':
 					#Process json line
-					#FIXME - negate won't work right now because the list of available fields can change on each json line
 					field_dict = json.loads(raw_line)
 					out_fields = []
-					#FIXME - handle case where no fields were requested.
 					for one_field in limited_fields:
-						if one_field in field_dict:
+						if requested_fields == []:
+							if one_field in field_dict:
+								out_fields.append(str(field_dict[one_field]))
+							else:
+								out_fields.append('-')
+						elif (one_field in field_dict) or (cl_args['negate'] and one_field not in field_dict):
 							#No need to convert timestamp as the 'ts' field is already human readable in json
 							#if one_field == 'ts' and cl_args['readabledate']:
 							#	out_fields.append(datetime.datetime.fromtimestamp(float(field_dict[one_field])).strftime(cl_args['dateformat']))
