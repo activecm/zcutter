@@ -3,7 +3,8 @@
 # zcutter, compatible with zeek-cut (formerly bro-cut)
 
 This is a python script that, like zeek-cut, handles the task of
-extracting specific columns from zeek-logs.
+extracting specific columns from zeek-logs.  It can also be used to
+convert between TSV and json format log files.
 
 ## Primary differences
 - zcutter is a standalone python script with no dependencies other than
@@ -22,7 +23,6 @@ the fly and deleted when done.
 ```
 mkdir -p ~/bin/
 cd ~/bin/
-wget https://raw.githubusercontent.com/activecm/zcutter/main/zeeklogs.py -O zeeklogs.py
 wget https://raw.githubusercontent.com/activecm/zcutter/main/zcutter.py -O zcutter.py
 chmod 755 zcutter.py
 if ! type zeek-cut >/dev/null 2>&1 ; then ln -s zcutter.py zeek-cut ; fi
