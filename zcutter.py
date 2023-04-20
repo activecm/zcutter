@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Python replacement for zeek-cut.  Handles tsv and json input files."""
+"""Python replacement for zeek-cut.  Handles tsv and json input files."""				# pylint: disable=too-many-lines
 
 #Copyright 2023 William Stearns <william.l.stearns@gmail.com>
 #Released under the GPL
 
 
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2016-2023, William Stearns'
@@ -13,7 +13,7 @@ __credits__ = ['William Stearns']
 __email__ = 'william.l.stearns@gmail.com'
 __license__ = 'GPL 3.0'
 __maintainer__ = 'William Stearns'
-__status__ = 'Development'				#Prototype, Development or Production
+__status__ = 'Development'		#Prototype, Development or Production
 
 
 #Sample uses:
@@ -630,7 +630,6 @@ def create_simulated_headers():
 		for one_line in h_list:
 			if one_line.startswith('#path'):
 				file_path = one_line.split('\t')[1]
-				#print("==== " + file_path)
 			elif one_line.startswith('#fields'):
 				field_list = one_line.split('\t')[1:]
 			elif one_line.startswith('#types'):
@@ -681,11 +680,14 @@ def fail(fail_message: str) -> None:
 	sys.exit(1)
 
 
-def print_line(output_line):
-	"""Print or log the output line."""
+def print_line(output_line, out_h):
+	"""Print or log the output line.  If out_h is set, use that as a handle to which to write the line, otherwise print to stdout."""
 
 	try:
-		print(output_line)
+		if out_h:
+			out_h.write(output_line + '\n')
+		else:
+			print(output_line)
 	except (BrokenPipeError, KeyboardInterrupt):
 		sys.stderr.close()									#To avoid printing the BrokenPipeError warning
 		sys.exit(0)
@@ -719,7 +721,7 @@ def open_gzip_file_to_tmp_file(gzip_filename: str) -> str:
 		raise
 
 
-def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict):
+def process_log_lines(log_file: str, original_filename, requested_fields: List[str], cl_args: Dict):
 	"""Will process all the lines in an uncompressed log file."""
 
 	if 'data_line_seen' not in process_log_lines.__dict__:
@@ -728,21 +730,31 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 	if 'tsv_headers_printed' not in process_log_lines.__dict__:
 		process_log_lines.tsv_headers_printed = False
 
-
 	file_format: str = ''
 
 	field_location: Dict[str, int] = {}								#Remembers in which column we can find a given field name.
 
 	Debug("Processing: " + log_file)
 	with open(log_file, 'r', encoding='utf8') as log_h:
+		output_h = None
+		if cl_args['outputdir'] and original_filename not in ('-', '', None):			#If original_filename is one of these it's from stdin, so we don't create a handle and the output continues to go to stdout.
+			output_filename = os.path.join(cl_args['outputdir'], os.path.basename(original_filename).replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
+			if output_filename:
+				if os.path.exists(output_filename):
+					Debug(output_filename + " exists, skipping.")
+				else:
+					output_h = open(output_filename, "a+", encoding="utf8")		# pylint: disable=consider-using-with
+
 		limited_fields = []
 		file_path = ''										#The zeek record type, like "dns", "http".  In TSV, found on #path line, in json, in key "_path"
 		for _, raw_line in enumerate(log_h):							#_ is the line count
 			raw_line = raw_line.rstrip()
 			if not file_format:
-				#FIXME - handle case where we stdin gets both TSV and json input lines
+				#FIXME - handle case where stdin gets both TSV and json input lines
 				if raw_line == r'#separator \x09':					#Use raw string so python won't turn \x09 into an actual tab
 					file_format = 'tsv'
+				#elif raw_line == '':							#conn-summary files start with a blank line, but we've skipped these already.
+				#	pass
 				elif raw_line.startswith('{'):
 					file_format = 'json'
 					field_dict_1 = json.loads(raw_line)
@@ -781,17 +793,17 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 					for one_line in header_lines[field_dict_2["_path"]]:
 						if one_line.startswith('#fields'):
 							if cl_args['_min_hdr']:
-								print_line(cl_args['fieldseparator'].join(limited_fields))
+								print_line(cl_args['fieldseparator'].join(limited_fields), output_h)
 							else:
-								print_line('#fields' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_fields))
+								print_line('#fields' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_fields), output_h)
 						elif not cl_args['_min_hdr']:
 							if one_line.startswith('#types'):
-								print_line('#types' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_types))
+								print_line('#types' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_types), output_h)
 							#Note, we do not have to speically handle the "#path" line below as the templates already have a correct #path line.
 							#elif one_line.startswith('#path'):
-							#	print_line(one_line)
+							#	print_line(one_line, output_h)
 							else:
-								print_line(one_line)
+								print_line(one_line, output_h)
 				else:
 					fail("_path missing from first json record.")
 
@@ -898,7 +910,10 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 					fail('Unrecognized file format: ' + file_format)
 
 			if out_line:
-				print_line(out_line)
+				print_line(out_line, output_h)
+
+		if output_h:
+			output_h.close()
 
 	sys.stderr.flush()
 
@@ -944,6 +959,9 @@ def process_log(log_source, fields: List[str], cl_args: Dict):
 		source_file = tmp_log.name
 		close_temp = True
 	#Set up source packet file; next 2 sections check for and handle compressed file extensions first, then final "else" treats the source as an uncompressed log file
+	elif os.path.basename(log_source).startswith('conn-summary'):
+		Debug("Skipping conn-summary file " + log_source)
+		return
 	elif log_source.endswith('.bz2'):
 		Debug('Reading bzip2 compressed logs from file ' + log_source)
 		source_file = open_bzip2_file_to_tmp_file(log_source)
@@ -960,7 +978,7 @@ def process_log(log_source, fields: List[str], cl_args: Dict):
 	if source_file:
 		if os.path.exists(source_file) and os.access(source_file, os.R_OK):
 			try:
-				process_log_lines(source_file, fields, cl_args)
+				process_log_lines(source_file, log_source, fields, cl_args)
 			except (FileNotFoundError, IOError):
 				sys.stderr.write("Unable to open file " + str(log_source) + ', exiting.\n')
 				raise
@@ -990,12 +1008,18 @@ if __name__ == "__main__":
 	parser.add_argument('-t', '--tsv', help='Force TSV output', required=False, default=False, action='store_true')
 	parser.add_argument('-j', '--json', help='Force json output', required=False, default=False, action='store_true')
 	parser.add_argument('-v', '--verbose', help='Be verbose', required=False, default=False, action='store_true')
+	parser.add_argument('-o', '--outputdir', help='Directory in which to place corresponding (uncompressed) output files', required=False, default='')
 	parser.add_argument('-r', '--read', help='Log file(s) from which to read logs (place this option last)', required=False, default=[], nargs='*')
 	#May need to manually transfer params misplaced as files into the fields array.  Perhaps by extension?
 	args = vars(parser.parse_args())
 
 	if args['tsv'] and args['json']:
 		fail("Cannot force both tsv and json output at the same time.")
+
+	if args['outputdir'] and (not os.path.isdir(args['outputdir'])):
+		fail(str(args['outputdir']) + " is not a directory")
+	if args['outputdir'] and (not os.access(args['outputdir'], os.W_OK)):
+		fail(str(args['outputdir']) + " is not writeable")
 
 	if args['dateformat'] != '%FT%T+0000':
 		args['readabledate'] = True
