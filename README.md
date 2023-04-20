@@ -18,6 +18,9 @@ these can be any mix of gz compressed, bzip2 compressed, uncompressed,
 TSV, and json.  Compressed files will be automatically decompressed on
 the fly and deleted when done.
 
+- zcutter will write out the (converted) files to an output directory,
+allowing you to bulk convert zeek logs.
+
 
 # Quickstart
 ```
