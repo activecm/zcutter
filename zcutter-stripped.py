@@ -5,7 +5,7 @@
 #Released under the GPL
 
 
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2016-2023, William Stearns'
@@ -15,9 +15,6 @@ __license__ = 'GPL 3.0'
 __maintainer__ = 'William Stearns'
 __status__ = 'Development'		#Prototype, Development or Production
 
-
-#Sample uses:
-#ZZZZ
 
 
 #======== External libraries
@@ -606,9 +603,6 @@ r"""#separator \x09
 
 
 
-
-
-
 #======== Functions
 def create_simulated_headers():
 	"""Create dictionaries with simulated header blocks, "#fields" lines, and "#types" lines for each file type."""
@@ -661,7 +655,6 @@ def create_simulated_headers():
 			sys.stderr.flush()
 
 	return (local_header_lines, local_field_name_lists, local_field_type_lists)
-
 
 
 def Debug(DebugStr):
@@ -719,6 +712,31 @@ def open_gzip_file_to_tmp_file(gzip_filename):
 	except:
 		sys.stderr.write("While expanding gzip file, unable to write to " + str(tmp_path) + ', exiting.\n')
 		raise
+
+
+def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_file_path):
+	"""Provide a formatted output line from the raw data fields."""
+
+	if not zeek_file_path:
+		Debug('Missing zeek_file_path in data_line_of')
+
+	output_line = ''
+	if cl_args['tsv']:
+		output_line = cl_args['fieldseparator'].join(field_value_list)
+	elif cl_args['json']:
+		out_dict = dict(zip(field_name_list, field_value_list))
+		if '_path' not in out_dict:
+			out_dict['_path'] = zeek_file_path
+		output_line = json.dumps(out_dict)
+	elif input_type == 'tsv':
+		output_line = cl_args['fieldseparator'].join(field_value_list)
+	elif input_type == 'json':
+		out_dict = dict(zip(field_name_list, field_value_list))
+		if '_path' not in out_dict:
+			out_dict['_path'] = zeek_file_path
+		output_line = json.dumps(out_dict)
+
+	return output_line
 
 
 def process_log_lines(log_file, original_filename, requested_fields, cl_args):
@@ -916,31 +934,6 @@ def process_log_lines(log_file, original_filename, requested_fields, cl_args):
 			output_h.close()
 
 	sys.stderr.flush()
-
-
-def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_file_path):
-	"""Provide a formatted output line from the raw data fields."""
-
-	if not zeek_file_path:
-		Debug('Missing zeek_file_path in data_line_of')
-
-	output_line = ''
-	if cl_args['tsv']:
-		output_line = cl_args['fieldseparator'].join(field_value_list)
-	elif cl_args['json']:
-		out_dict = dict(zip(field_name_list, field_value_list))
-		if '_path' not in out_dict:
-			out_dict['_path'] = zeek_file_path
-		output_line = json.dumps(out_dict)
-	elif input_type == 'tsv':
-		output_line = cl_args['fieldseparator'].join(field_value_list)
-	elif input_type == 'json':
-		out_dict = dict(zip(field_name_list, field_value_list))
-		if '_path' not in out_dict:
-			out_dict['_path'] = zeek_file_path
-		output_line = json.dumps(out_dict)
-
-	return output_line
 
 
 def process_log(log_source, fields, cl_args):
