@@ -5,7 +5,7 @@
 #Released under the GPL
 
 
-__version__ = '0.1.3'
+__version__ = '0.1.6'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2016-2023, William Stearns'
@@ -610,13 +610,13 @@ r"""#separator \x09
 
 
 #======== Functions
-def register_header_block():
-	"""Load in a header block from a TSV format zeek log."""
+def create_simulated_headers():
+	"""Create dictionaries with simulated header blocks, "#fields" lines, and "#types" lines for each file type."""
 
-	local_header_lines = {}		#Keys are file_type, values are lists of header strings
-	local_field_name_lists = {}		#Keys are file_type, values are lists of field names
-	local_field_type_lists = {}		#Keys are file_type, values are lists of field types
-	#master_types = {}		#keys are file_type, values are dictionaries of field->type.
+	local_header_lines = {}										#Keys are file_path, values are lists of header strings
+	local_field_name_lists = {}									#Keys are file_path, values are lists of field names
+	local_field_type_lists = {}									#Keys are file_path, values are lists of field types
+	#master_types = {}										#Keys are file_path, values are dictionaries of field->type.
 
 	for hb in raw_header_blocks:
 
@@ -624,13 +624,13 @@ def register_header_block():
 
 		pared_h_list = []
 
-		file_type = ''
+		file_path = ''
 		field_list = []
 		type_list = []
 		for one_line in h_list:
 			if one_line.startswith('#path'):
-				file_type = one_line.split('\t')[1]
-				#print("==== " + file_type)
+				file_path = one_line.split('\t')[1]
+				#print("==== " + file_path)
 			elif one_line.startswith('#fields'):
 				field_list = one_line.split('\t')[1:]
 			elif one_line.startswith('#types'):
@@ -642,33 +642,31 @@ def register_header_block():
 		assert len(field_list) == len(type_list)
 
 		#if field_list and type_list:
-		#	if file_type not in master_types:
-		#		master_types[file_type] = {}
+		#	if file_path not in master_types:
+		#		master_types[file_path] = {}
 		#	types_of = dict(zip(field_list, type_list))
 		#	for field_name, field_type in types_of.items():
-		#		master_types[file_type][field_name] = field_type
+		#		master_types[file_path][field_name] = field_type
 		#else:
-		#	print(file_type + " is missing one or both of field and type lines.")
+		#	print(file_path + " is missing one or both of field and type lines.")
 
-		if file_type:
-			if file_type in local_header_lines:
-				sys.stderr.write(file_type + " being added twice in zeeklogs.py .\n")
+		if file_path:
+			if file_path in local_header_lines:
+				sys.stderr.write(file_path + " being added twice in zeeklogs.py .\n")
 				sys.stderr.flush()
-			local_header_lines[file_type] = pared_h_list
-			local_field_name_lists[file_type] = field_list
-			local_field_type_lists[file_type] = type_list
+			local_header_lines[file_path] = pared_h_list
+			local_field_name_lists[file_path] = field_list
+			local_field_type_lists[file_path] = type_list
 		else:
 			sys.stderr.write("No #path line or missing #path value in zeeklogs.py .\n")
 			sys.stderr.flush()
-
-		#print(str(h_list))
 
 	return (local_header_lines, local_field_name_lists, local_field_type_lists)
 
 
 
 def Debug(DebugStr: str) -> None:
-	"""Prints a note to stderr"""
+	"""Prints a note to stderr."""
 
 	if args['verbose']:
 		sys.stderr.write(DebugStr + '\n')
@@ -681,6 +679,16 @@ def fail(fail_message: str) -> None:
 	sys.stderr.write(str(fail_message) + ', exiting.\n')
 	sys.stderr.flush()
 	sys.exit(1)
+
+
+def print_line(output_line):
+	"""Print or log the output line."""
+
+	try:
+		print(output_line)
+	except (BrokenPipeError, KeyboardInterrupt):
+		sys.stderr.close()									#To avoid printing the BrokenPipeError warning
+		sys.exit(0)
 
 
 def open_bzip2_file_to_tmp_file(bzip2_filename: str) -> str:
@@ -721,35 +729,37 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 		process_log_lines.tsv_headers_printed = False
 
 
-	file_type: str = ''
+	file_format: str = ''
 
-	field_location: Dict[str, int] = {}							#Remembers in which column we can find a given field name.
+	field_location: Dict[str, int] = {}								#Remembers in which column we can find a given field name.
 
 	Debug("Processing: " + log_file)
 	with open(log_file, 'r', encoding='utf8') as log_h:
 		limited_fields = []
-		for _, raw_line in enumerate(log_h):						#_ is the line count
+		file_path = ''										#The zeek record type, like "dns", "http".  In TSV, found on #path line, in json, in key "_path"
+		for _, raw_line in enumerate(log_h):							#_ is the line count
 			raw_line = raw_line.rstrip()
-			if not file_type:
+			if not file_format:
 				#FIXME - handle case where we stdin gets both TSV and json input lines
-				if raw_line == r'#separator \x09':				#Use raw string so python won't turn \x09 into an actual tab
-					file_type = 'tsv'
+				if raw_line == r'#separator \x09':					#Use raw string so python won't turn \x09 into an actual tab
+					file_format = 'tsv'
 				elif raw_line.startswith('{'):
-					file_type = 'json'
-					field_dict = json.loads(raw_line)
-					if "_path" in field_dict:
-						del field_dict["_path"]
-					if "_write_ts" in field_dict:
-						del field_dict["_write_ts"]
+					file_format = 'json'
+					field_dict_1 = json.loads(raw_line)
+					if "_path" in field_dict_1:
+						file_path = field_dict_1["_path"]
+						del field_dict_1["_path"]
+					if "_write_ts" in field_dict_1:
+						del field_dict_1["_write_ts"]
 					if requested_fields == []:
-						limited_fields = list(field_dict.keys())
+						limited_fields = list(field_dict_1.keys())
 					elif cl_args['negate']:
-						for one_field in field_dict.keys():
+						for one_field in field_dict_1.keys():
 							if not one_field in requested_fields:
 								limited_fields.append(one_field)
 					else:
 						for one_field in requested_fields:
-							if one_field in field_dict.keys():
+							if one_field in field_dict_1.keys():
 								limited_fields.append(one_field)
 				elif raw_line.startswith('#separator'):
 					fail('Unrecognized separator in ' + log_file)
@@ -757,38 +767,31 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 					fail('Unrecognized starting line in ' + log_file)
 
 
-			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_type == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
+			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_format == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
 				#We're inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
-				field_dict = json.loads(raw_line)
+				#FIXME - make this code block into a function
+				field_dict_2 = json.loads(raw_line)
 
-				if "_path" in field_dict:
-					type_of = dict(zip(field_name_lists[field_dict["_path"]], field_type_lists[field_dict["_path"]]))
+				if "_path" in field_dict_2:
+					file_path = field_dict_2['_path']
+					type_of = dict(zip(field_name_lists[field_dict_2["_path"]], field_type_lists[field_dict_2["_path"]]))
 					limited_types = []
 					for one_field in limited_fields:
 						limited_types.append(type_of[one_field])
-					for one_line in header_lines[field_dict["_path"]]:
+					for one_line in header_lines[field_dict_2["_path"]]:
 						if one_line.startswith('#fields'):
-							try:
-								if cl_args['allminheaders'] or cl_args['firstminheaders']:
-									print(cl_args['fieldseparator'].join(limited_fields))
-								else:
-									print('#fields' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_fields))
-							except (BrokenPipeError, KeyboardInterrupt):
-								sys.stderr.close()					#To avoid printing the BrokenPipeError warning
-								sys.exit(0)
-						elif not(cl_args['allminheaders'] or cl_args['firstminheaders']):
-							if one_line.startswith('#types'):
-								try:
-									print('#types' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_types))
-								except (BrokenPipeError, KeyboardInterrupt):
-									sys.stderr.close()					#To avoid printing the BrokenPipeError warning
-									sys.exit(0)
+							if cl_args['_min_hdr']:
+								print_line(cl_args['fieldseparator'].join(limited_fields))
 							else:
-								try:
-									print(one_line)
-								except (BrokenPipeError, KeyboardInterrupt):
-									sys.stderr.close()					#To avoid printing the BrokenPipeError warning
-									sys.exit(0)
+								print_line('#fields' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_fields))
+						elif not cl_args['_min_hdr']:
+							if one_line.startswith('#types'):
+								print_line('#types' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_types))
+							#Note, we do not have to speically handle the "#path" line below as the templates already have a correct #path line.
+							#elif one_line.startswith('#path'):
+							#	print_line(one_line)
+							else:
+								print_line(one_line)
 				else:
 					fail("_path missing from first json record.")
 
@@ -816,7 +819,7 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 							if one_field in field_location:
 								limited_fields.append(one_field)
 					out_line = cl_args['fieldseparator'].join(limited_fields)
-					if not (cl_args['allminheaders'] or cl_args['firstminheaders']):		#Prepend "#fields" unless we're doing minimal headers
+					if not cl_args['_min_hdr']:					#Prepend "#fields" unless we're doing minimal headers
 						out_line = '#fields' + cl_args['fieldseparator'] + out_line
 
 				elif raw_line.startswith('#types'):
@@ -834,10 +837,14 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 							field_index = field_location.get(one_label)
 							if field_index is not None:
 								type_list.append(type_line_fields[field_index])
-					if not (cl_args['allminheaders'] or cl_args['firstminheaders']):
+					if not cl_args['_min_hdr']:
 						out_line = cl_args['fieldseparator'].join(type_list)
+				elif raw_line.startswith('#path'):
+					file_path = raw_line.split('\t')[1]
+					if not cl_args['_min_hdr']:
+						out_line = raw_line
 				else:
-					if not (cl_args['allminheaders'] or cl_args['firstminheaders']):
+					if not cl_args['_min_hdr']:
 						out_line = raw_line
 
 				if not (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)):
@@ -847,7 +854,7 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 			else:
 				process_log_lines.data_line_seen = True
 				#Process non-header lines
-				if file_type == 'tsv':
+				if file_format == 'tsv':
 					if not field_location:
 						fail("Warning, field_location is not set as we enter live data lines")
 					#process tsv line
@@ -865,54 +872,57 @@ def process_log_lines(log_file: str, requested_fields: List[str], cl_args: Dict)
 							out_fields.append(datetime.datetime.fromtimestamp(float(extracted_field)).strftime(cl_args['dateformat']))
 						else:
 							out_fields.append(extracted_field)
-					out_line = data_line_of(limited_fields, out_fields, file_type, cl_args)
-				elif file_type == 'json':
+					out_line = data_line_of(limited_fields, out_fields, file_format, cl_args, file_path)
+				elif file_format == 'json':
 					#Process json line
-					field_dict = json.loads(raw_line)
+					field_dict_3 = json.loads(raw_line)
 					out_fields = []
 					for one_field in limited_fields:
 						if requested_fields == []:
-							if one_field in field_dict:
-								out_fields.append(str(field_dict[one_field]))
+							if one_field in field_dict_3:
+								out_fields.append(str(field_dict_3[one_field]))
 							else:
 								out_fields.append('-')
-						elif (one_field in field_dict) or (cl_args['negate'] and one_field not in field_dict):
+						elif (one_field in field_dict_3) or (cl_args['negate'] and one_field not in field_dict_3):
 							#No need to convert timestamp as the 'ts' field is already human readable in json
 							#if one_field == 'ts' and cl_args['readabledate']:
-							#	out_fields.append(datetime.datetime.fromtimestamp(float(field_dict[one_field])).strftime(cl_args['dateformat']))
+							#	out_fields.append(datetime.datetime.fromtimestamp(float(field_dict_3[one_field])).strftime(cl_args['dateformat']))
 							#else:
 							#FIXME - we can't force str if we later output to json format
-							out_fields.append(str(field_dict[one_field]))
+							out_fields.append(str(field_dict_3[one_field]))
 						else:
 							out_fields.append('-')
 
-					out_line = data_line_of(limited_fields, out_fields, file_type, cl_args)
+					out_line = data_line_of(limited_fields, out_fields, file_format, cl_args, file_path)
 				else:
-					fail('Unrecognized file type: ' + file_type)
+					fail('Unrecognized file format: ' + file_format)
 
 			if out_line:
-				try:
-					print(out_line)
-				except (BrokenPipeError, KeyboardInterrupt):
-					sys.stderr.close()					#To avoid printing the BrokenPipeError warning
-					sys.exit(0)
+				print_line(out_line)
 
 	sys.stderr.flush()
 
 
-def data_line_of(field_name_list, field_value_list, input_type, cl_args):
+def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_file_path):
 	"""Provide a formatted output line from the raw data fields."""
+
+	if not zeek_file_path:
+		Debug('Missing zeek_file_path in data_line_of')
 
 	output_line = ''
 	if cl_args['tsv']:
 		output_line = cl_args['fieldseparator'].join(field_value_list)
 	elif cl_args['json']:
 		out_dict = dict(zip(field_name_list, field_value_list))
+		if '_path' not in out_dict:
+			out_dict['_path'] = zeek_file_path
 		output_line = json.dumps(out_dict)
 	elif input_type == 'tsv':
 		output_line = cl_args['fieldseparator'].join(field_value_list)
 	elif input_type == 'json':
 		out_dict = dict(zip(field_name_list, field_value_list))
+		if '_path' not in out_dict:
+			out_dict['_path'] = zeek_file_path
 		output_line = json.dumps(out_dict)
 
 	return output_line
@@ -995,7 +1005,7 @@ if __name__ == "__main__":
 	args['_one_hdr'] = args['firstheaders'] or args['firstminheaders']
 
 	if args['tsv'] and args['_hdr']:								#We only need the simulated header blocks if the output is forced to TSV and the user wants headers
-		header_lines, field_name_lists, field_type_lists = register_header_block()
+		header_lines, field_name_lists, field_type_lists = create_simulated_headers()
 	else:
 		header_lines = {}
 		field_name_lists = {}
