@@ -5,7 +5,7 @@
 #Released under the GPL
 
 
-__version__ = '0.1.8'
+__version__ = '0.2.0'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2016-2023, William Stearns'
@@ -25,6 +25,8 @@ import bz2				#Opening bzip2 compressed files
 import datetime				#Date formatting
 import gzip				#Opening gzip compressed files
 import json				#Reading json formatted files
+import errno				#For exceptions
+import shutil				#For file copies
 from typing import Dict, List
 
 
@@ -601,7 +603,8 @@ r"""#separator \x09
 #close	9999-12-31-23-59-59"""
 ]
 
-
+skip_log_prefix = ('LICENSE', 'README', '.capture_loss.', '.capture_loss_', '.conn.', '.conn_', '.dns.', '.dns_', '.env_vars', '.http.', '.http_', '.known_certs.', '.known_certs_', '.notice.', '.notice_', '.ntlm.', '.ntlm_', '.rotated.', '.ssl.', '.ssl_', '.stats.', '.stats_', '.x509.', '.x509_', '.startup', '.cmdline', '.pid', 'conn-summary', 'stderr', 'stdout')		#Note, the following are actual zeek logs: capture_loss, files, loaded_scripts, notice, packet_filter, stats, weird
+skip_log_suffix = ('.pcap', '.tar.gz', '.tar', '.zip', '.zng', '.zng.gz')				#.log.gz is TSV, .zson.gz is json, .ndjson.gz is NL-delimited json, and .zng is a zed special format
 
 #======== Functions
 def create_simulated_headers():
@@ -686,6 +689,23 @@ def print_line(output_line, out_h):
 		sys.exit(0)
 
 
+def mkdir_p(path: str) -> None:
+	"""Create an entire directory branch.  Will not complain if the directory already exists."""
+
+	if not os.path.isdir(path):
+		try:
+			os.makedirs(path)
+		except OSError as exc:
+			if exc.errno == errno.EEXIST and os.path.isdir(path):
+				pass
+			elif exc.errno == errno.EEXIST:
+				sys.stderr.write(path + ' exists, so we cannot create it as a directory.  Exiting.\n')
+				sys.stderr.flush()
+				sys.exit(1)
+			else:
+				raise
+
+
 def open_bzip2_file_to_tmp_file(bzip2_filename: str) -> str:
 	"""Open up a bzip2 file to a temporary file and return that filename."""
 
@@ -756,11 +776,14 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 	with open(log_file, 'r', encoding='utf8') as log_h:
 		output_h = None
 		if cl_args['outputdir'] and original_filename not in ('-', '', None):			#If original_filename is one of these it's from stdin, so we don't create a handle and the output continues to go to stdout.
-			output_filename = os.path.join(cl_args['outputdir'], os.path.basename(original_filename).replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
+			output_filename = os.path.join(cl_args['outputdir'], original_filename.replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
 			if output_filename:
 				if os.path.exists(output_filename):
-					Debug(output_filename + " exists, skipping.")
+					Debug(output_filename + " exists, late skipping.")
+					log_h.close()
+					return
 				else:
+					mkdir_p(os.path.dirname(os.path.join(cl_args['outputdir'], original_filename)))
 					output_h = open(output_filename, "a+", encoding="utf8")		# pylint: disable=consider-using-with
 
 		limited_fields = []
@@ -932,8 +955,46 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 
 		if output_h:
 			output_h.close()
+			relative_touch(original_filename, os.path.join(cl_args['outputdir'], original_filename.replace('.gz', '').replace('.bz2', '')))
 
 	sys.stderr.flush()
+
+
+def relative_touch(old_file: str, new_file_to_change: str):
+	"""Make the modification time and atime of new_file_to_change to be equal to those of old_file."""
+
+	os.utime(new_file_to_change, ns=(os.stat(old_file).st_atime_ns, os.stat(old_file).st_mtime_ns))
+
+
+def link_or_copy(source_dirname, source_basename, destdir, dest_relative_file):
+	"""Create a hardlink from source to destdir (which may not yet exist.)"""
+
+	complete_source = os.path.join(source_dirname, source_basename)
+
+	if not os.path.isdir(destdir):
+		try:
+			mkdir_p(destdir)
+		except:											# pylint: disable=bare-except
+			Debug("Unable to create " + destdir + " , skipping " + complete_source)
+			return
+
+
+	if os.path.isdir(destdir) and os.access(destdir, os.W_OK):
+		complete_dest = os.path.join(destdir, dest_relative_file)
+		if os.path.exists(complete_dest):
+			Debug('Skipping copy of ' + complete_source + ' as it already exists in ' + destdir)
+			pass
+		else:
+			try:
+				os.link(complete_source, complete_dest, follow_symlinks=False)			#Don't follow symlinks as these may point to sensitive files outside the log tree.
+				#No need to adjust timestamp as hardlinks share the underlying timestamps
+			except OSError:
+				#Debug('Unable to hardlink, so we will do a file copy instead')
+				try:
+					shutil.copy2(complete_source, complete_dest, follow_symlinks=False)	#Copy the file, preserving metadata if possible
+					relative_touch(complete_source, complete_dest)
+				except:										# pylint: disable=bare-except
+					Debug('Unable to link or copy ' + complete_source + ' to ' + destdir + ' , skipping.')
 
 
 def process_log(log_source, fields: List[str], cl_args: Dict):
@@ -943,17 +1004,37 @@ def process_log(log_source, fields: List[str], cl_args: Dict):
 	close_temp = False
 	delete_temp = False
 
+	try:
+		full_source_path, source_basename = os.path.split(log_source)
+	except:												# pylint: disable=bare-except
+		full_source_path = ''
+		source_basename = ''
+
+	if log_source not in ('-', '', None) and cl_args['outputdir']:
+		output_filename = os.path.join(cl_args['outputdir'], log_source.replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
+		if output_filename and os.path.exists(output_filename):
+			Debug(output_filename + " exists, skipping.")
+			return
+
 	#Read from stdin
 	if log_source in ('-', '', None):
 		Debug('Reading log lines from stdin.')
-		tmp_log = tempfile.NamedTemporaryFile(delete=True)											# pylint: disable=consider-using-with
+		tmp_log = tempfile.NamedTemporaryFile(delete=True)					# pylint: disable=consider-using-with
 		tmp_log.write(sys.stdin.buffer.read())
 		tmp_log.flush()
 		source_file = tmp_log.name
 		close_temp = True
+	elif not os.path.exists(log_source):
+		Debug('Skipping nonexistent file ' + log_source)
 	#Set up source packet file; next 2 sections check for and handle compressed file extensions first, then final "else" treats the source as an uncompressed log file
-	elif os.path.basename(log_source).startswith('conn-summary'):
-		Debug("Skipping conn-summary file " + log_source)
+	elif source_basename.startswith(skip_log_prefix) or source_basename.endswith(skip_log_suffix):	#Log files that are not TSV/json formatted log files
+		Debug("Linking or copying non-TSV/json file " + log_source)
+		if cl_args['outputdir']:
+			#Make a hardlink to the file if possible (or copy if not) in the output directory
+			link_or_copy(full_source_path, source_basename, os.path.realpath(cl_args['outputdir']), log_source)
+		else:
+			#We're sending content to stdout - do not process the file at all to match zeek-cut.
+			pass
 		return
 	elif log_source.endswith('.bz2'):
 		Debug('Reading bzip2 compressed logs from file ' + log_source)
