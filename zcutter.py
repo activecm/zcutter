@@ -4,8 +4,9 @@
 #Copyright 2023 William Stearns <william.l.stearns@gmail.com>
 #Released under the GPL
 
+#Dedicated to my colleague and friend, Chris Brenton.  Many thanks for all you have shared about understanding networks.
 
-__version__ = '0.2.0'
+__version__ = '1.0.0'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2016-2023, William Stearns'
@@ -105,6 +106,15 @@ r"""#separator \x09
 #open	0000-00-00-00-00-00
 #fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	orig_size	resp_size	mbps	age_of_conn
 #types	time	string	addr	port	addr	port	enum	count	count	double	interval
+#close	9999-12-31-23-59-59""",
+r"""#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	corelight_overall_capture_loss
+#open	0000-00-00-00-00-00
+#fields	ts	gaps	acks	percent_lost
+#types	time	double	double	double
 #close	9999-12-31-23-59-59""",
 r"""#separator \x09
 #set_separator	,
@@ -759,6 +769,33 @@ def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_fi
 	return output_line
 
 
+def print_sim_tsv_header(line_dict, requested_fields, cl_args, output_h):
+	"""Generate a simulated TSV header for the case where we input json and output in TSV."""
+
+	if "_path" in line_dict:
+		file_path = line_dict['_path']
+		type_of = dict(zip(field_name_lists[file_path], field_type_lists[file_path]))
+		limited_types = []
+		for one_field in requested_fields:
+			limited_types.append(type_of[one_field])
+		for one_line in header_lines[file_path]:
+			if one_line.startswith('#fields'):
+				if cl_args['_min_hdr']:
+					print_line(cl_args['fieldseparator'].join(requested_fields), output_h)
+				else:
+					print_line('#fields' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(requested_fields), output_h)
+			elif not cl_args['_min_hdr']:
+				if one_line.startswith('#types'):
+					print_line('#types' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_types), output_h)
+				#No  special handling needed for the "#path" line as the templates already have a correct #path line.
+				else:
+					print_line(one_line, output_h)
+	else:
+		fail("_path missing from first json record.")
+
+	process_log_lines.tsv_headers_printed = True
+
+
 def process_log_lines(log_file: str, original_filename, requested_fields: List[str], cl_args: Dict):
 	"""Will process all the lines in an uncompressed log file."""
 
@@ -778,7 +815,7 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 		if cl_args['outputdir'] and original_filename not in ('-', '', None):			#If original_filename is one of these it's from stdin, so we don't create a handle and the output continues to go to stdout.
 			output_filename = os.path.join(cl_args['outputdir'], original_filename.replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
 			if output_filename:
-				if os.path.exists(output_filename):
+				if os.path.exists(output_filename):					# pylint: disable=no-else-return
 					Debug(output_filename + " exists, late skipping.")
 					log_h.close()
 					return
@@ -822,34 +859,7 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 
 			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_format == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
 				#We're inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
-				#FIXME - make this code block into a function
-				field_dict_2 = json.loads(raw_line)
-
-				if "_path" in field_dict_2:
-					file_path = field_dict_2['_path']
-					type_of = dict(zip(field_name_lists[field_dict_2["_path"]], field_type_lists[field_dict_2["_path"]]))
-					limited_types = []
-					for one_field in limited_fields:
-						limited_types.append(type_of[one_field])
-					for one_line in header_lines[field_dict_2["_path"]]:
-						if one_line.startswith('#fields'):
-							if cl_args['_min_hdr']:
-								print_line(cl_args['fieldseparator'].join(limited_fields), output_h)
-							else:
-								print_line('#fields' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_fields), output_h)
-						elif not cl_args['_min_hdr']:
-							if one_line.startswith('#types'):
-								print_line('#types' + cl_args['fieldseparator'] + cl_args['fieldseparator'].join(limited_types), output_h)
-							#Note, we do not have to speically handle the "#path" line below as the templates already have a correct #path line.
-							#elif one_line.startswith('#path'):
-							#	print_line(one_line, output_h)
-							else:
-								print_line(one_line, output_h)
-				else:
-					fail("_path missing from first json record.")
-
-				process_log_lines.tsv_headers_printed = True
-
+				print_sim_tsv_header(json.loads(raw_line), limited_fields, cl_args, output_h)
 
 			out_line = ''
 			if raw_line.startswith('#'):
@@ -983,7 +993,6 @@ def link_or_copy(source_dirname, source_basename, destdir, dest_relative_file):
 		complete_dest = os.path.join(destdir, dest_relative_file)
 		if os.path.exists(complete_dest):
 			Debug('Skipping copy of ' + complete_source + ' as it already exists in ' + destdir)
-			pass
 		else:
 			try:
 				os.link(complete_source, complete_dest, follow_symlinks=False)			#Don't follow symlinks as these may point to sensitive files outside the log tree.
