@@ -6,15 +6,15 @@
 
 #Dedicated to my colleague and friend, Chris Brenton.  Many thanks for all you have shared about understanding networks.
 
-__version__ = '1.0.0'
+__version__ = '1.0.4'
 
 __author__ = 'William Stearns'
-__copyright__ = 'Copyright 2016-2023, William Stearns'
+__copyright__ = 'Copyright 2023, William Stearns'
 __credits__ = ['William Stearns']
 __email__ = 'william.l.stearns@gmail.com'
 __license__ = 'GPL 3.0'
 __maintainer__ = 'William Stearns'
-__status__ = 'Development'		#Prototype, Development or Production
+__status__ = 'Production'		#Prototype, Development or Production
 
 
 
@@ -27,6 +27,7 @@ import datetime				#Date formatting
 import gzip				#Opening gzip compressed files
 import json				#Reading json formatted files
 import errno				#For exceptions
+import zlib
 import shutil				#For file copies
 from typing import Dict, List
 
@@ -738,10 +739,29 @@ def open_gzip_file_to_tmp_file(gzip_filename: str) -> str:
 		with os.fdopen(tmp_fd, 'wb') as tmp_h, gzip.GzipFile(gzip_filename, 'rb') as compressed_file:
 			for data in iter(lambda: compressed_file.read(100 * 1024), b''):
 				tmp_h.write(data)
-		return tmp_path
-	except:
-		sys.stderr.write("While expanding gzip file, unable to write to " + str(tmp_path) + ', exiting.\n')
-		raise
+	except zlib.error:
+		sys.stderr.write(str(gzip_filename) + " could not be decompressed with zlib, skipping.\n")
+		if os.path.exists(tmp_path):
+			os.remove(tmp_path)
+		tmp_path = ''
+	except gzip.BadGzipFile:
+		sys.stderr.write(str(gzip_filename) + " is not a gzip file, skipping.\n")
+		if os.path.exists(tmp_path):
+			os.remove(tmp_path)
+		tmp_path = ''
+	except EOFError:
+		sys.stderr.write(str(gzip_filename) + " appears to be truncated, skipping.\n")
+		if os.path.exists(tmp_path):
+			os.remove(tmp_path)
+		tmp_path = ''
+	except:												# pylint: disable=bare-except
+		sys.stderr.write("While expanding gzip file, unable to write to " + str(tmp_path) + ', skipping.\n')
+		if os.path.exists(tmp_path):
+			os.remove(tmp_path)
+		tmp_path = ''
+		#raise
+
+	return tmp_path
 
 
 def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_file_path):
@@ -845,16 +865,18 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 						limited_fields = list(field_dict_1.keys())
 					elif cl_args['negate']:
 						for one_field in field_dict_1.keys():
-							if not one_field in requested_fields:
+							if one_field not in requested_fields:
 								limited_fields.append(one_field)
 					else:
 						for one_field in requested_fields:
 							if one_field in field_dict_1.keys():
 								limited_fields.append(one_field)
 				elif raw_line.startswith('#separator'):
-					fail('Unrecognized separator in ' + log_file)
+					sys.stderr.write('Unrecognized separator in ' + log_file + ' , skipping.\n')
+					return
 				else:
-					fail('Unrecognized starting line in ' + log_file)
+					sys.stderr.write('Unrecognized starting line in ' + log_file + ' , skipping.\n')
+					return
 
 
 			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_format == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
@@ -875,7 +897,7 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 						limited_fields = field_line_fields.copy()
 					elif cl_args['negate']:
 						for one_field in field_location:
-							if not one_field in requested_fields:
+							if one_field not in requested_fields:
 								limited_fields.append(one_field)
 					else:
 						for one_field in requested_fields:
@@ -938,25 +960,28 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 					out_line = data_line_of(limited_fields, out_fields, file_format, cl_args, file_path)
 				elif file_format == 'json':
 					#Process json line
-					field_dict_3 = json.loads(raw_line)
-					out_fields = []
-					for one_field in limited_fields:
-						if requested_fields == []:
-							if one_field in field_dict_3:
+					try:
+						field_dict_3 = json.loads(raw_line)
+						out_fields = []
+						for one_field in limited_fields:
+							if requested_fields == []:
+								if one_field in field_dict_3:
+									out_fields.append(str(field_dict_3[one_field]))
+								else:
+									out_fields.append('-')
+							elif (one_field in field_dict_3) or (cl_args['negate'] and one_field not in field_dict_3):
+								#No need to convert timestamp as the 'ts' field is already human readable in json
+								#if one_field == 'ts' and cl_args['readabledate']:
+								#	out_fields.append(datetime.datetime.fromtimestamp(float(field_dict_3[one_field])).strftime(cl_args['dateformat']))
+								#else:
+								#FIXME - we can't force str if we later output to json format
 								out_fields.append(str(field_dict_3[one_field]))
 							else:
 								out_fields.append('-')
-						elif (one_field in field_dict_3) or (cl_args['negate'] and one_field not in field_dict_3):
-							#No need to convert timestamp as the 'ts' field is already human readable in json
-							#if one_field == 'ts' and cl_args['readabledate']:
-							#	out_fields.append(datetime.datetime.fromtimestamp(float(field_dict_3[one_field])).strftime(cl_args['dateformat']))
-							#else:
-							#FIXME - we can't force str if we later output to json format
-							out_fields.append(str(field_dict_3[one_field]))
-						else:
-							out_fields.append('-')
 
-					out_line = data_line_of(limited_fields, out_fields, file_format, cl_args, file_path)
+						out_line = data_line_of(limited_fields, out_fields, file_format, cl_args, file_path)
+					except json.decoder.JSONDecodeError:
+						out_line = ''
 				else:
 					fail('Unrecognized file format: ' + file_format)
 
@@ -1086,7 +1111,7 @@ if __name__ == "__main__":
 	parser.add_argument('-m', '--firstminheaders', help='Include first format header blocks in the output in minimal view.', required=False, default=False, action='store_true')
 	parser.add_argument('-M', '--allminheaders', help='Include all format header blocks in the output in minimal view.', required=False, default=False, action='store_true')
 	parser.add_argument('-F', '--fieldseparator', help='character that separates output fields.', required=False, default='\t')
-	parser.add_argument('-d', '--readabledate', help='Conert ts to readable format.', required=False, default=False, action='store_true')
+	parser.add_argument('-d', '--readabledate', help='Convert ts to readable format.', required=False, default=False, action='store_true')
 	parser.add_argument('-D', '--dateformat', help='Format to use for date output.', required=False, default='%FT%T+0000')		#Should be using %z , but it comes up empty.  need to force +0000  https://docs.python.org/3/library/datetime.html
 	parser.add_argument('-t', '--tsv', help='Force TSV output', required=False, default=False, action='store_true')
 	parser.add_argument('-j', '--json', help='Force json output', required=False, default=False, action='store_true')
@@ -1098,6 +1123,9 @@ if __name__ == "__main__":
 
 	if args['tsv'] and args['json']:
 		fail("Cannot force both tsv and json output at the same time.")
+
+	if (int(args['firstheaders']) + int(args['allheaders']) + int(args['firstminheaders']) + int(args['allminheaders'])) > 1:
+		fail('Please pick just one header format type')
 
 	if args['outputdir'] and (not os.path.isdir(args['outputdir'])):
 		fail(str(args['outputdir']) + " is not a directory")
