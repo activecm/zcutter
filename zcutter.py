@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Python replacement for zeek-cut.  Handles tsv and json input files."""				# pylint: disable=too-many-lines
+"""Python replacement for zeek-cut.  Handles tsv and json input and output files."""			# pylint: disable=too-many-lines
 
 #Copyright 2023 William Stearns <william.l.stearns@gmail.com>
 #Released under the GPL
 
 #Dedicated to my colleague and friend, Chris Brenton.  Many thanks for all you have shared about understanding networks.
 
-__version__ = '1.0.4'
+__version__ = '1.0.12'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2023, William Stearns'
-__credits__ = ['William Stearns']
+__credits__ = ['William Stearns', 'Naomi Goddard']
 __email__ = 'william.l.stearns@gmail.com'
 __license__ = 'GPL 3.0'
 __maintainer__ = 'William Stearns'
@@ -29,8 +29,7 @@ import json				#Reading json formatted files
 import errno				#For exceptions
 import zlib
 import shutil				#For file copies
-from typing import Dict, List
-
+from typing import Dict, List, Union, TextIO
 
 
 
@@ -614,11 +613,20 @@ r"""#separator \x09
 #close	9999-12-31-23-59-59"""
 ]
 
+
+#Originally this was supposed to be key=fieldname, value=fieldtype (like 'ts_delta': 'interval' below.
+#Unfortunately these are not fixed.  For example, 'version' is a 'string' in 5 headers (called 'paths')
+#but 'count' in 3 others.  For that reason, some of these are key=(fieldname, path), value=fieldtype , so
+#you have to check for both fieldname and (fieldname. path) as keys when accessing this; see top of correct_var_format
+static_field_types: dict = {('ts', 'app_stats'): 'time', 'ts_delta': 'interval', 'app': 'string', 'uniq_hosts': 'count', 'hits': 'count', 'bytes': 'count', ('ts', 'broker'): 'time', 'ty': 'enum', 'ev': 'string', 'peer.address': 'string', 'peer.bound_port': 'port', 'message': 'string', ('ts', 'capture_loss'): 'time', 'peer': 'string', ('gaps', 'capture_loss'): 'count', ('acks', 'capture_loss'): 'count', 'percent_lost': 'double', ('ts', 'cluster'): 'time', 'node': 'string', ('ts', 'communication'): 'time', 'src_name': 'string', 'connected_peer_desc': 'string', 'connected_peer_addr': 'addr', 'connected_peer_port': 'port', ('level', 'communication'): 'string', '_node_name': 'string', ('ts', 'conn'): 'time', 'uid': 'string', 'id.orig_h': 'addr', 'id.orig_p': 'port', 'id.resp_h': 'addr', 'id.resp_p': 'port', ('proto', 'conn'): 'enum', ('service', 'conn'): 'string', 'duration': 'interval', 'orig_bytes': 'count', 'resp_bytes': 'count', 'conn_state': 'string', 'local_orig': 'bool', 'local_resp': 'bool', 'missed_bytes': 'count', 'history': 'string', 'orig_pkts': 'count', 'orig_ip_bytes': 'count', 'resp_pkts': 'count', 'resp_ip_bytes': 'count', 'tunnel_parents': 'set[string]', ('ts', 'conn_red'): 'time', ('proto', 'conn_red'): 'enum', ('service', 'conn_red'): 'string', 'orig_cc': 'string', 'resp_cc': 'string', 'orig_l2_addr': 'string', 'resp_l2_addr': 'string', 'vlan': 'int', 'inner_vlan': 'int', 'community_id': 'string', ('ts', 'corelight_burst'): 'time', ('proto', 'corelight_burst'): 'enum', 'orig_size': 'count', 'resp_size': 'count', 'mbps': 'double', 'age_of_conn': 'interval', ('ts', 'corelight_overall_capture_loss'): 'time', ('gaps', 'corelight_overall_capture_loss'): 'double', ('acks', 'corelight_overall_capture_loss'): 'double', ('ts', 'datared'): 'time', 'conn_red': 'count', 'conn_total': 'count', 'dns_red': 'count', 'dns_total': 'count', 'dns_coal_miss': 'count', 'files_red': 'count', 'files_total': 'count', 'files_coal_miss': 'count', 'http_red': 'count', 'http_total': 'count', 'ssl_red': 'count', 'ssl_total': 'count', 'ssl_coal_miss': 'count', 'weird_red': 'count', 'weird_total': 'count', 'x509_red': 'count', 'x509_total': 'count', 'x509_coal_miss': 'count', ('ts', 'dce_rpc'): 'time', 'rtt': 'interval', 'named_pipe': 'string', 'endpoint': 'string', 'operation': 'string', ('ts', 'dhcp'): 'time', 'uids': 'set[string]', 'client_addr': 'addr', 'server_addr': 'addr', 'mac': 'string', 'host_name': 'string', 'client_fqdn': 'string', 'domain': 'string', 'requested_addr': 'addr', 'assigned_addr': 'addr', 'lease_time': 'interval', 'client_message': 'string', 'server_message': 'string', 'msg_types': 'vector[string]', ('ts', 'dnp3'): 'time', 'fc_request': 'string', 'fc_reply': 'string', 'iin': 'count', ('ts', 'dns'): 'time', ('proto', 'dns'): 'enum', 'trans_id': 'count', 'query': 'string', 'qclass': 'count', 'qclass_name': 'string', 'qtype': 'count', 'qtype_name': 'string', 'rcode': 'count', 'rcode_name': 'string', 'AA': 'bool', 'TC': 'bool', 'RD': 'bool', 'RA': 'bool', 'Z': 'count', 'answers': 'vector[string]', 'TTLs': 'vector[interval]', 'rejected': 'bool', ('ts', 'dns_red'): 'time', 'num': 'count', ('ts', 'dpd'): 'time', ('proto', 'dpd'): 'enum', 'analyzer': 'string', 'failure_reason': 'string', 'server_a': 'addr', 'server_p': 'port', ('service', 'etc_viz'): 'set[string]', 'viz_stat': 'string', 'c2s_viz.size': 'count', 'c2s_viz.enc_dev': 'double', 'c2s_viz.enc_frac': 'double', 'c2s_viz.pdu1_enc': 'bool', 'c2s_viz.clr_frac': 'double', 'c2s_viz.clr_ex': 'string', 's2c_viz.size': 'count', 's2c_viz.enc_dev': 'double', 's2c_viz.enc_frac': 'double', 's2c_viz.pdu1_enc': 'bool', 's2c_viz.clr_frac': 'double', 's2c_viz.clr_ex': 'string', ('ts', 'files'): 'time', 'fuid': 'string', 'tx_hosts': 'set[addr]', 'rx_hosts': 'set[addr]', 'conn_uids': 'set[string]', 'source': 'string', 'depth': 'count', 'analyzers': 'set[string]', 'mime_type': 'string', 'filename': 'string', 'is_orig': 'bool', 'seen_bytes': 'count', 'total_bytes': 'count', 'missing_bytes': 'count', 'overflow_bytes': 'count', 'timedout': 'bool', 'parent_fuid': 'string', 'md5': 'string', 'sha1': 'string', 'sha256': 'string', ('extracted', 'files'): 'string', 'extracted_cutoff': 'bool', 'extracted_size': 'count', ('ts', 'files_red'): 'vector[time]', ('extracted', 'files_red'): 'set[string]', ('ts', 'ftp'): 'time', 'user': 'string', 'password': 'string', 'command': 'string', 'arg': 'string', 'file_size': 'count', 'reply_code': 'count', 'reply_msg': 'string', 'data_channel.passive': 'bool', 'data_channel.orig_h': 'addr', 'data_channel.resp_h': 'addr', 'data_channel.resp_p': 'port', ('ts', 'http'): 'time', 'trans_depth': 'count', 'method': 'string', ('host', 'http'): 'string', 'uri': 'string', 'referrer': 'string', ('version', 'http'): 'string', 'user_agent': 'string', 'origin': 'string', 'request_body_len': 'count', 'response_body_len': 'count', 'status_code': 'count', 'status_msg': 'string', 'info_code': 'count', 'info_msg': 'string', 'tags': 'set[enum]', 'username': 'string', 'proxied': 'set[string]', 'orig_fuids': 'vector[string]', 'orig_filenames': 'vector[string]', 'orig_mime_types': 'vector[string]', 'resp_fuids': 'vector[string]', 'resp_filenames': 'vector[string]', 'resp_mime_types': 'vector[string]', ('ts', 'http_red'): 'time', ('host', 'http_red'): 'string', ('version', 'http_red'): 'string', 'post_body': 'string', ('ts', 'intel'): 'time', 'seen.indicator': 'string', 'seen.indicator_type': 'enum', 'seen.where': 'enum', 'matched': 'set[enum]', 'sources': 'set[string]', 'file_mime_type': 'string', 'file_desc': 'string', ('ts', 'irc'): 'time', 'nick': 'string', 'value': 'string', 'addl': 'string', 'dcc_file_name': 'string', 'dcc_file_size': 'count', 'dcc_mime_type': 'string', ('ts', 'kerberos'): 'time', 'request_type': 'string', 'client': 'string', ('service', 'kerberos'): 'string', 'success': 'bool', 'error_msg': 'string', ('from', 'kerberos'): 'time', 'till': 'time', 'cipher': 'string', 'forwardable': 'bool', 'renewable': 'bool', 'client_cert_subject': 'string', 'client_cert_fuid': 'string', 'server_cert_subject': 'string', 'server_cert_fuid': 'string', ('ts', 'known_certs'): 'time', ('host', 'known_certs'): 'addr', 'port_num': 'port', 'subject': 'string', 'issuer_subject': 'string', 'serial': 'string', ('ts', 'known_hosts'): 'time', ('host', 'known_hosts'): 'addr', ('ts', 'known_services'): 'time', ('host', 'known_services'): 'addr', 'port_proto': 'enum', ('service', 'known_services'): 'set[string]', ('ts', 'modbus'): 'time', 'func': 'string', 'exception': 'string', ('ts', 'mqtt_connect'): 'time', 'proto_name': 'string', 'proto_version': 'string', 'client_id': 'string', 'connect_status': 'string', 'will_topic': 'string', 'will_payload': 'string', ('ts', 'mqtt_publish'): 'time', 'from_client': 'bool', 'retain': 'bool', 'qos': 'string', 'status': 'string', 'topic': 'string', 'payload': 'string', 'payload_len': 'count', ('ts', 'mqtt_subscribe'): 'time', 'action': 'enum', 'topics': 'vector[string]', 'qos_levels': 'vector[count]', 'granted_qos_level': 'count', 'ack': 'bool', ('ts', 'mysql'): 'time', 'cmd': 'string', 'rows': 'count', 'response': 'string', ('ts', 'namecache'): 'time', 'lookups': 'count', 'hit_rate_conn': 'double', 'hit_rate_conn_orig_h': 'double', 'hit_rate_conn_resp_h': 'double', 'hit_rate_conn_prod': 'double', 'hit_rate_conn_prod_orig_h': 'double', 'hit_rate_conn_prod_resp_h': 'double', 'hit_rate_conn_int_h': 'double', 'hit_rate_conn_ext_h': 'double', 'src_dns_a': 'count', 'src_dns_aaaa': 'count', 'src_dns_a6': 'count', 'src_dns_ptr': 'count', 'src_unknown': 'count', 'cache_entries': 'count', 'cache_add_tx_ev': 'count', 'cache_add_tx_mpg': 'count', 'cache_add_rx_ev': 'count', 'cache_add_rx_mpg': 'count', 'cache_add_rx_new': 'count', 'cache_del_mpg': 'count', ('ts', 'notice'): 'time', ('proto', 'notice'): 'enum', 'note': 'enum', 'msg': 'string', 'sub': 'string', 'src': 'addr', 'dst': 'addr', 'p': 'port', 'n': 'count', 'peer_descr': 'string', 'actions': 'set[enum]', 'email_dest': 'set[string]', 'suppress_for': 'interval', 'remote_location.country_code': 'string', 'remote_location.region': 'string', 'remote_location.city': 'string', 'remote_location.latitude': 'double', 'remote_location.longitude': 'double', ('ts', 'ntlm'): 'time', 'hostname': 'string', 'domainname': 'string', 'server_nb_computer_name': 'string', 'server_dns_computer_name': 'string', 'server_tree_name': 'string', ('ts', 'ntp'): 'time', ('version', 'ntp'): 'count', 'mode': 'count', 'stratum': 'count', 'poll': 'interval', 'precision': 'interval', 'root_delay': 'interval', 'root_disp': 'interval', 'ref_id': 'string', 'ref_time': 'time', 'org_time': 'time', 'rec_time': 'time', 'xmt_time': 'time', 'num_exts': 'count', ('ts', 'ocsp'): 'time', 'id': 'string', 'hashAlgorithm': 'string', 'issuerNameHash': 'string', 'issuerKeyHash': 'string', 'serialNumber': 'string', 'certStatus': 'string', 'revoketime': 'time', 'revokereason': 'string', 'thisUpdate': 'time', 'nextUpdate': 'time', ('ts', 'open_conn'): 'time', ('proto', 'open_conn'): 'enum', ('service', 'open_conn'): 'string', ('ts', 'packet_filter'): 'time', 'filter': 'string', 'init': 'bool', ('ts', 'pe'): 'time', 'machine': 'string', 'compile_ts': 'time', 'os': 'string', 'subsystem': 'string', 'is_exe': 'bool', 'is_64bit': 'bool', 'uses_aslr': 'bool', 'uses_dep': 'bool', 'uses_code_integrity': 'bool', 'uses_seh': 'bool', 'has_import_table': 'bool', 'has_export_table': 'bool', 'has_cert_table': 'bool', 'has_debug_data': 'bool', 'section_names': 'vector[string]', ('ts', 'radius'): 'time', 'framed_addr': 'addr', 'remote_ip': 'addr', 'connect_info': 'string', 'result': 'string', 'ttl': 'interval', ('ts', 'rdp'): 'time', 'cookie': 'string', 'security_protocol': 'string', 'keyboard_layout': 'string', 'client_build': 'string', 'client_name': 'string', 'client_dig_product_id': 'string', 'desktop_width': 'count', 'desktop_height': 'count', 'requested_color_depth': 'string', 'cert_type': 'string', 'cert_count': 'count', 'cert_permanent': 'bool', 'encryption_level': 'string', 'encryption_method': 'string', ('ts', 'reporter'): 'time', ('level', 'reporter'): 'enum', 'location': 'string', ('ts', 'rfb'): 'time', 'client_major_version': 'string', 'client_minor_version': 'string', 'server_major_version': 'string', 'server_minor_version': 'string', 'authentication_method': 'string', 'auth': 'bool', 'share_flag': 'bool', 'desktop_name': 'string', 'width': 'count', 'height': 'count', ('ts', 'signatures'): 'time', 'src_addr': 'addr', 'src_port': 'port', 'dst_addr': 'addr', 'dst_port': 'port', 'sig_id': 'string', 'event_msg': 'string', 'sub_msg': 'string', 'sig_count': 'count', 'host_count': 'count', ('ts', 'sip'): 'time', 'date': 'string', 'request_from': 'string', 'request_to': 'string', 'response_from': 'string', 'response_to': 'string', 'reply_to': 'string', 'call_id': 'string', 'seq': 'string', 'request_path': 'vector[string]', 'response_path': 'vector[string]', 'warning': 'string', 'content_type': 'string', ('ts', 'smb_files'): 'time', ('path', 'smb_files'): 'string', 'name': 'string', 'size': 'count', 'prev_name': 'string', 'times.modified': 'time', 'times.accessed': 'time', 'times.created': 'time', 'times.changed': 'time', 'data_offset_req': 'count', 'data_len_req': 'count', 'data_len_rsp': 'count', ('ts', 'smb_mapping'): 'time', ('path', 'smb_mapping'): 'string', ('service', 'smb_mapping'): 'string', 'native_file_system': 'string', 'share_type': 'string', ('ts', 'smtp'): 'time', 'helo': 'string', 'mailfrom': 'string', 'rcptto': 'set[string]', ('from', 'smtp'): 'string', 'to': 'set[string]', 'cc': 'set[string]', 'msg_id': 'string', 'in_reply_to': 'string', 'x_originating_ip': 'addr', 'first_received': 'string', 'second_received': 'string', 'last_reply': 'string', ('path', 'smtp'): 'vector[addr]', 'tls': 'bool', 'fuids': 'vector[string]', 'is_webmail': 'bool', ('ts', 'snmp'): 'time', ('version', 'snmp'): 'string', 'community': 'string', 'get_requests': 'count', 'get_bulk_requests': 'count', 'get_responses': 'count', 'set_requests': 'count', 'display_string': 'string', 'up_since': 'time', ('ts', 'socks'): 'time', ('version', 'socks'): 'count', 'request.host': 'addr', 'request.name': 'string', 'request_p': 'port', 'bound.host': 'addr', 'bound.name': 'string', 'bound_p': 'port', ('ts', 'software'): 'time', ('host', 'software'): 'addr', 'host_p': 'port', 'software_type': 'enum', 'version.major': 'count', 'version.minor': 'count', 'version.minor2': 'count', 'version.minor3': 'count', 'version.addl': 'string', 'unparsed_version': 'string', ('ts', 'ssh'): 'time', ('version', 'ssh'): 'count', 'auth_success': 'bool', 'auth_attempts': 'count', 'direction': 'enum', 'server': 'string', 'cipher_alg': 'string', 'mac_alg': 'string', 'compression_alg': 'string', 'kex_alg': 'string', 'host_key_alg': 'string', 'host_key': 'string', ('ts', 'ssl'): 'time', ('version', 'ssl'): 'string', 'curve': 'string', 'server_name': 'string', 'resumed': 'bool', 'last_alert': 'string', 'next_protocol': 'string', 'established': 'bool', 'ssl_history': 'string', 'cert_chain_fps': 'vector[string]', 'client_cert_chain_fps': 'vector[string]', 'sni_matches_cert': 'bool', 'validation_status': 'string', 'ja3': 'string', 'ja3s': 'string', ('ts', 'ssl_red'): 'time', ('version', 'ssl_red'): 'string', 'cert_chain_fuids': 'vector[string]', 'client_cert_chain_fuids': 'vector[string]', 'issuer': 'string', 'client_subject': 'string', 'client_issuer': 'string', ('ts', 'stats'): 'time', 'mem': 'count', 'pkts_proc': 'count', 'bytes_recv': 'count', 'pkts_dropped': 'count', 'pkts_link': 'count', 'pkt_lag': 'interval', 'events_proc': 'count', 'events_queued': 'count', 'active_tcp_conns': 'count', 'active_udp_conns': 'count', 'active_icmp_conns': 'count', 'tcp_conns': 'count', 'udp_conns': 'count', 'icmp_conns': 'count', 'timers': 'count', 'active_timers': 'count', 'files': 'count', 'active_files': 'count', 'dns_requests': 'count', 'active_dns_requests': 'count', 'reassem_tcp_size': 'count', 'reassem_file_size': 'count', 'reassem_frag_size': 'count', 'reassem_unknown_size': 'count', ('ts', 'syslog'): 'time', ('proto', 'syslog'): 'enum', 'facility': 'string', 'severity': 'string', ('ts', 'traceroute'): 'time', ('proto', 'traceroute'): 'string', ('ts', 'tunnel'): 'time', 'tunnel_type': 'enum', ('ts', 'weird'): 'time', 'notice': 'bool', ('ts', 'weird_red'): 'time', ('ts', 'x509'): 'time', 'fingerprint': 'string', 'certificate.version': 'count', 'certificate.serial': 'string', 'certificate.subject': 'string', 'certificate.issuer': 'string', 'certificate.not_valid_before': 'time', 'certificate.not_valid_after': 'time', 'certificate.key_alg': 'string', 'certificate.sig_alg': 'string', 'certificate.key_type': 'string', 'certificate.key_length': 'count', 'certificate.exponent': 'string', 'certificate.curve': 'string', 'san.dns': 'vector[string]', 'san.uri': 'vector[string]', 'san.email': 'vector[string]', 'san.ip': 'vector[addr]', 'basic_constraints.ca': 'bool', 'basic_constraints.path_len': 'count', 'host_cert': 'bool', 'client_cert': 'bool', ('ts', 'x509_red'): 'time'}
+
+
+
 skip_log_prefix = ('LICENSE', 'README', '.capture_loss.', '.capture_loss_', '.conn.', '.conn_', '.dns.', '.dns_', '.env_vars', '.http.', '.http_', '.known_certs.', '.known_certs_', '.notice.', '.notice_', '.ntlm.', '.ntlm_', '.rotated.', '.ssl.', '.ssl_', '.stats.', '.stats_', '.x509.', '.x509_', '.startup', '.cmdline', '.pid', 'conn-summary', 'stderr', 'stdout')		#Note, the following are actual zeek logs: capture_loss, files, loaded_scripts, notice, packet_filter, stats, weird
 skip_log_suffix = ('.pcap', '.tar.gz', '.tar', '.zip', '.zng', '.zng.gz')				#.log.gz is TSV, .zson.gz is json, .ndjson.gz is NL-delimited json, and .zng is a zed special format
 
 #======== Functions
-def create_simulated_headers():
+def create_simulated_headers() -> tuple[Dict, Dict, Dict]:
 	"""Create dictionaries with simulated header blocks, "#fields" lines, and "#types" lines for each file type."""
 
 	local_header_lines = {}										#Keys are file_path, values are lists of header strings
@@ -659,13 +667,13 @@ def create_simulated_headers():
 
 		if file_path:
 			if file_path in local_header_lines:
-				sys.stderr.write(file_path + " being added twice in zeeklogs.py .\n")
+				sys.stderr.write(file_path + " being added twice in zcutter.py .\n")
 				sys.stderr.flush()
 			local_header_lines[file_path] = pared_h_list
 			local_field_name_lists[file_path] = field_list
 			local_field_type_lists[file_path] = type_list
 		else:
-			sys.stderr.write("No #path line or missing #path value in zeeklogs.py .\n")
+			sys.stderr.write("No #path line or missing #path value in zcutter.py .\n")
 			sys.stderr.flush()
 
 	return (local_header_lines, local_field_name_lists, local_field_type_lists)
@@ -687,7 +695,7 @@ def fail(fail_message: str) -> None:
 	sys.exit(1)
 
 
-def print_line(output_line, out_h):
+def print_line(output_line: str, out_h: Union[TextIO, None]) -> None:
 	"""Print or log the output line.  If out_h is set, use that as a handle to which to write the line, otherwise print to stdout."""
 
 	try:
@@ -764,32 +772,36 @@ def open_gzip_file_to_tmp_file(gzip_filename: str) -> str:
 	return tmp_path
 
 
-def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_file_path):
+def data_line_of(field_name_list: List[str], field_value_list: List, input_type: str, cl_args: Dict, zeek_file_path:str) -> str:
 	"""Provide a formatted output line from the raw data fields."""
 
 	if not zeek_file_path:
 		Debug('Missing zeek_file_path in data_line_of')
 
-	output_line = ''
+	output_line: str = ''
+	no_empty_out_dict: Dict = {}
+
 	if cl_args['tsv']:
 		output_line = cl_args['fieldseparator'].join(field_value_list)
 	elif cl_args['json']:
 		out_dict = dict(zip(field_name_list, field_value_list))
 		if '_path' not in out_dict:
 			out_dict['_path'] = zeek_file_path
-		output_line = json.dumps(out_dict)
+		no_empty_out_dict = {k: v for k, v in out_dict.items() if v != ''}
+		output_line = json.dumps(no_empty_out_dict)
 	elif input_type == 'tsv':
 		output_line = cl_args['fieldseparator'].join(field_value_list)
 	elif input_type == 'json':
 		out_dict = dict(zip(field_name_list, field_value_list))
 		if '_path' not in out_dict:
 			out_dict['_path'] = zeek_file_path
-		output_line = json.dumps(out_dict)
+		no_empty_out_dict = {k: v for k, v in out_dict.items() if v != ''}
+		output_line = json.dumps(no_empty_out_dict)
 
 	return output_line
 
 
-def print_sim_tsv_header(line_dict, requested_fields, cl_args, output_h):
+def print_sim_tsv_header(line_dict: Dict, requested_fields: List, cl_args: Dict, output_h: Union[TextIO, None]) -> None:
 	"""Generate a simulated TSV header for the case where we input json and output in TSV."""
 
 	if "_path" in line_dict:
@@ -813,25 +825,70 @@ def print_sim_tsv_header(line_dict, requested_fields, cl_args, output_h):
 	else:
 		fail("_path missing from first json record.")
 
-	process_log_lines.tsv_headers_printed = True
+	process_log_lines.tsv_headers_printed = True							# type: ignore
 
 
-def process_log_lines(log_file: str, original_filename, requested_fields: List[str], cl_args: Dict):
+def correct_var_format(field_str_value: str, this_field_name: str, this_file_path: str, correct_field_types: Dict, cl_args: Dict) -> Union[str, int, float, bool, list]:
+	"""Json requires numbers (ints and floats) and boolean values to be
+	presented as such, rather than values inside strings.  This function
+	takes a specific field and returns it as the correct python type so
+	it can be correctly formatted as json."""
+
+	typed_field: Union[str, int, float, bool, list] = ''
+
+	#Check for both this_field_name and (this_field_name, this_file_path) as keys
+	mytype = correct_field_types.get(this_field_name, correct_field_types.get((this_field_name, this_file_path), ''))
+	if field_str_value == '':
+		typed_field = ''
+	elif field_str_value == '-' and mytype in ('port', 'count', 'int', 'time', 'interval', 'double'):
+		typed_field = ''
+	elif field_str_value == '(empty)' and mytype.startswith(('vector[', 'set[')):
+		typed_field = []
+	elif this_field_name == 'ts' and cl_args['readabledate']:
+		typed_field = datetime.datetime.fromtimestamp(float(field_str_value)).strftime(cl_args['dateformat'])
+	elif mytype in ('port', 'count', 'int'):
+		typed_field = int(field_str_value)
+	elif mytype in ('time', 'interval', 'double'):
+		typed_field = float(field_str_value)
+	elif mytype == 'bool':
+		if field_str_value in ('t', 'T', 'true', True,):
+			typed_field = True
+		elif field_str_value in ('f', 'F', 'false', False,):
+			typed_field = False
+		else:
+			typed_field = bool(field_str_value)
+	elif mytype.startswith(('vector[', 'set[')):
+		if len(field_str_value) > 0:
+			#This may need tweaking if the upcoming conversion to str (for TSV output) or json.dumps (for json output) don't correctly format the values inside the list.
+			typed_field = field_str_value.split(',')
+		else:
+			typed_field = ''
+	else:
+		typed_field = str(field_str_value)
+
+	return typed_field
+
+
+def process_log_lines(log_file: str, original_filename: str, requested_fields: List[str], cl_args: Dict) -> None:
 	"""Will process all the lines in an uncompressed log file."""
 
 	if 'data_line_seen' not in process_log_lines.__dict__:
-		process_log_lines.data_line_seen = False
+		process_log_lines.data_line_seen = False						# type: ignore
 
 	if 'tsv_headers_printed' not in process_log_lines.__dict__:
-		process_log_lines.tsv_headers_printed = False
+		process_log_lines.tsv_headers_printed = False						# type: ignore
 
-	file_format: str = ''
+	in_file_format: str = ''
+	field_line_fields: List = []
+	type_line_fields: List = []
+	field_types: Dict = {}										#Dictionary whose keys are ALL field names and whose values are the corresponding field types.  This has all the field names, even when we limit the output to only certain fields.
 
 	field_location: Dict[str, int] = {}								#Remembers in which column we can find a given field name.
 
 	Debug("Processing: " + log_file)
+	log_h: Union[TextIO, None] = None
 	with open(log_file, 'r', encoding='utf8') as log_h:
-		output_h = None
+		output_h: Union[TextIO, None] = None
 		if cl_args['outputdir'] and original_filename not in ('-', '', None):			#If original_filename is one of these it's from stdin, so we don't create a handle and the output continues to go to stdout.
 			output_filename = os.path.join(cl_args['outputdir'], original_filename.replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
 			if output_filename:
@@ -843,18 +900,18 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 					mkdir_p(os.path.dirname(os.path.join(cl_args['outputdir'], original_filename)))
 					output_h = open(output_filename, "a+", encoding="utf8")		# pylint: disable=consider-using-with
 
-		limited_fields = []
+		limited_fields: List = []
 		file_path = ''										#The zeek record type, like "dns", "http".  In TSV, found on #path line, in json, in key "_path"
 		for _, raw_line in enumerate(log_h):							#_ is the line count
 			raw_line = raw_line.rstrip()
-			if not file_format:
+			if not in_file_format:
 				#FIXME - handle case where stdin gets both TSV and json input lines
 				if raw_line == r'#separator \x09':					#Use raw string so python won't turn \x09 into an actual tab
-					file_format = 'tsv'
+					in_file_format = 'tsv'
 				#elif raw_line == '':							#conn-summary files start with a blank line, but we've skipped these already.
 				#	pass
 				elif raw_line.startswith('{'):
-					file_format = 'json'
+					in_file_format = 'json'
 					field_dict_1 = json.loads(raw_line)
 					if "_path" in field_dict_1:
 						file_path = field_dict_1["_path"]
@@ -879,7 +936,7 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 					return
 
 
-			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and file_format == 'json' and process_log_lines.tsv_headers_printed is False):	# pylint: disable=too-many-boolean-expressions
+			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and in_file_format == 'json' and process_log_lines.tsv_headers_printed is False):	# type: ignore # pylint: disable=too-many-boolean-expressions
 				#We're inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
 				print_sim_tsv_header(json.loads(raw_line), limited_fields, cl_args, output_h)
 
@@ -908,11 +965,13 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 						out_line = '#fields' + cl_args['fieldseparator'] + out_line
 
 				elif raw_line.startswith('#types'):
-					#FIXME - warn/fail/handle case where #types shows up before #fields
 					type_list = ['#types', ]
 					type_line_fields = raw_line.split('\t')[1:]			#List of the fields in the #types line.  We have to use [1:] to skip over '#types'
 					if requested_fields == []:
 						type_list = raw_line.split('\t')			#Grab everything, including the leading "#types"
+					elif not field_location:
+						#Fail case where #types shows up before #fields
+						fail('field_location is not set when attempting to process #types line: is there a chance #types showed up before #fields?')
 					elif cl_args['negate']:
 						for line_index, one_type in enumerate(type_line_fields):
 							if line_index not in field_location.values():
@@ -932,14 +991,18 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 					if not cl_args['_min_hdr']:
 						out_line = raw_line
 
-				if not (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)):
+				if field_line_fields and type_line_fields and not field_types:
+					#Build the field_types dictionary
+					field_types = dict(zip(field_line_fields, type_line_fields))
+
+				if not (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)):	# type: ignore
 					out_line = ''
 				if cl_args['json']:
 					out_line = ''
 			else:
-				process_log_lines.data_line_seen = True
+				process_log_lines.data_line_seen = True					# type: ignore
 				#Process non-header lines
-				if file_format == 'tsv':
+				if in_file_format == 'tsv':
 					if not field_location:
 						fail("Warning, field_location is not set as we enter live data lines")
 					#process tsv line
@@ -948,42 +1011,42 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 					#FIXME - handle case where no fields were requested.
 					for one_field in limited_fields:
 						try:
-							#FIXME - we can't force str if we later output to json format
-							extracted_field = str(data_fields[field_location[one_field]])
+							field_in_string_format = data_fields[field_location[one_field]]
 						except IndexError:
-							extracted_field = '-'
+							field_in_string_format = ''
 
-						if one_field == 'ts' and cl_args['readabledate']:
-							out_fields.append(datetime.datetime.fromtimestamp(float(extracted_field)).strftime(cl_args['dateformat']))
+						#We _should_ have already built a field_types dictionary from the header fields.  If not, we fall back on the static one at the top of this program.
+						if cl_args['json']:
+							out_fields.append(correct_var_format(field_in_string_format, one_field, file_path, field_types or static_field_types, cl_args))
 						else:
-							out_fields.append(extracted_field)
-					out_line = data_line_of(limited_fields, out_fields, file_format, cl_args, file_path)
-				elif file_format == 'json':
+							if one_field == 'ts' and cl_args['readabledate']:
+								out_fields.append(datetime.datetime.fromtimestamp(float(field_in_string_format)).strftime(cl_args['dateformat']))
+							else:
+								out_fields.append(field_in_string_format)
+					out_line = data_line_of(limited_fields, out_fields, in_file_format, cl_args, file_path)
+				elif in_file_format == 'json':
 					#Process json line
 					try:
 						field_dict_3 = json.loads(raw_line)
 						out_fields = []
 						for one_field in limited_fields:
-							if requested_fields == []:
-								if one_field in field_dict_3:
-									out_fields.append(str(field_dict_3[one_field]))
+							if requested_fields == [] or (one_field in field_dict_3) or (cl_args['negate'] and one_field not in field_dict_3):
+								#We _should_ have already built a field_types dictionary from the header fields.  If not, we fall back on the static one at the top of this program.
+								if cl_args['tsv']:
+									if one_field == 'ts' and cl_args['readabledate']:
+										out_fields.append(datetime.datetime.fromtimestamp(float(field_dict_3.get(one_field, 0.0))).strftime(cl_args['dateformat']))
+									else:
+										out_fields.append(str(field_dict_3.get(one_field, '')))
 								else:
-									out_fields.append('-')
-							elif (one_field in field_dict_3) or (cl_args['negate'] and one_field not in field_dict_3):
-								#No need to convert timestamp as the 'ts' field is already human readable in json
-								#if one_field == 'ts' and cl_args['readabledate']:
-								#	out_fields.append(datetime.datetime.fromtimestamp(float(field_dict_3[one_field])).strftime(cl_args['dateformat']))
-								#else:
-								#FIXME - we can't force str if we later output to json format
-								out_fields.append(str(field_dict_3[one_field]))
+									out_fields.append(correct_var_format(str(field_dict_3.get(one_field, '')), one_field, file_path, field_types or static_field_types, cl_args))
 							else:
-								out_fields.append('-')
+								out_fields.append('')
 
-						out_line = data_line_of(limited_fields, out_fields, file_format, cl_args, file_path)
+						out_line = data_line_of(limited_fields, out_fields, in_file_format, cl_args, file_path)
 					except json.decoder.JSONDecodeError:
 						out_line = ''
 				else:
-					fail('Unrecognized file format: ' + file_format)
+					fail('Unrecognized file format: ' + in_file_format)
 
 			if out_line:
 				print_line(out_line, output_h)
@@ -995,13 +1058,13 @@ def process_log_lines(log_file: str, original_filename, requested_fields: List[s
 	sys.stderr.flush()
 
 
-def relative_touch(old_file: str, new_file_to_change: str):
+def relative_touch(old_file: str, new_file_to_change: str) -> None:
 	"""Make the modification time and atime of new_file_to_change to be equal to those of old_file."""
 
 	os.utime(new_file_to_change, ns=(os.stat(old_file).st_atime_ns, os.stat(old_file).st_mtime_ns))
 
 
-def link_or_copy(source_dirname, source_basename, destdir, dest_relative_file):
+def link_or_copy(source_dirname: str, source_basename: str, destdir: str, dest_relative_file: str) -> None:
 	"""Create a hardlink from source to destdir (which may not yet exist.)"""
 
 	complete_source = os.path.join(source_dirname, source_basename)
@@ -1031,7 +1094,7 @@ def link_or_copy(source_dirname, source_basename, destdir, dest_relative_file):
 					Debug('Unable to link or copy ' + complete_source + ' to ' + destdir + ' , skipping.')
 
 
-def process_log(log_source, fields: List[str], cl_args: Dict):
+def process_log(log_source: str, fields: list[str], cl_args: Dict) -> None:
 	"""Process a single source file or stdin."""
 
 	source_file = ''
@@ -1149,13 +1212,8 @@ if __name__ == "__main__":
 	requested_field_list: list = args['fields']
 	Debug('Requesting these columns: ' + str(requested_field_list))
 
-	#MissingFieldWarning: str = ''
-
 	if not args['read']:										#If no files specified, force reading from stdin
 		args['read'].append('')
 
 	for one_file in args['read']:
 		process_log(one_file, requested_field_list, args)
-
-	#if MissingFieldWarning:
-	#	sys.stderr.write(MissingFieldWarning)

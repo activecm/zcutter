@@ -1,0 +1,1965 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>zcutter API documentation</title>
+<meta name="description" content="Python replacement for zeek-cut.
+Handles tsv and json input and output files." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>zcutter</code></h1>
+</header>
+<section id="section-intro">
+<p>Python replacement for zeek-cut.
+Handles tsv and json input and output files.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+&#34;&#34;&#34;Python replacement for zeek-cut.  Handles tsv and json input and output files.&#34;&#34;&#34;                    # pylint: disable=too-many-lines
+
+#Copyright 2023 William Stearns &lt;william.l.stearns@gmail.com&gt;
+#Released under the GPL
+
+#Dedicated to my colleague and friend, Chris Brenton.  Many thanks for all you have shared about understanding networks.
+
+__version__ = &#39;1.0.12&#39;
+
+__author__ = &#39;William Stearns&#39;
+__copyright__ = &#39;Copyright 2023, William Stearns&#39;
+__credits__ = [&#39;William Stearns&#39;, &#39;Naomi Goddard&#39;]
+__email__ = &#39;william.l.stearns@gmail.com&#39;
+__license__ = &#39;GPL 3.0&#39;
+__maintainer__ = &#39;William Stearns&#39;
+__status__ = &#39;Production&#39;               #Prototype, Development or Production
+
+
+
+#======== External libraries
+import os                               #File access
+import sys                              #Used for reading from stdin/writing to stdout
+import tempfile                         #Creating temporary files for working with stdin or compressed files
+import bz2                              #Opening bzip2 compressed files
+import datetime                         #Date formatting
+import gzip                             #Opening gzip compressed files
+import json                             #Reading json formatted files
+import errno                            #For exceptions
+import zlib
+import shutil                           #For file copies
+from typing import Dict, List, Union, TextIO
+
+
+
+#======== Constants
+raw_header_blocks = [
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   app_stats
+#open   0000-00-00-00-00-00
+#fields ts      ts_delta        app     uniq_hosts      hits    bytes
+#types  time    interval        string  count   count   count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   broker
+#open   0000-00-00-00-00-00
+#fields ts      ty      ev      peer.address    peer.bound_port message
+#types  time    enum    string  string  port    string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   capture_loss
+#open   0000-00-00-00-00-00
+#fields ts      ts_delta        peer    gaps    acks    percent_lost
+#types  time    interval        string  count   count   double
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   cluster
+#open   0000-00-00-00-00-00
+#fields ts      node    message
+#types  time    string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   communication
+#open   0000-00-00-00-00-00
+#fields ts      peer    src_name        connected_peer_desc     connected_peer_addr     connected_peer_port     level   message
+#types  time    string  string  string  addr    port    string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   conn
+#open   0000-00-00-00-00-00
+#fields _node_name      ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   service duration        orig_bytes      resp_bytes      conn_state      local_orig      local_resp      missed_bytes    history orig_pkts       orig_ip_bytes   resp_pkts       resp_ip_bytes   tunnel_parents
+#types  string  time    string  addr    port    addr    port    enum    string  interval        count   count   string  bool    bool    count   string  count   count   count   count   set[string]
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   conn_red
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   service duration        orig_bytes      resp_bytes      conn_state      local_orig      local_resp      missed_bytes    history orig_pkts       orig_ip_bytes   resp_pkts       resp_ip_bytes   tunnel_parents  orig_cc resp_cc orig_l2_addr    resp_l2_addr    vlan    inner_vlan      community_id
+#types  time    string  addr    port    addr    port    enum    string  interval        count   count   string  bool    bool    count   string  count   count   count   count   set[string]     string  string  string  string  int     int     string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   corelight_burst
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   orig_size       resp_size       mbps    age_of_conn
+#types  time    string  addr    port    addr    port    enum    count   count   double  interval
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   corelight_overall_capture_loss
+#open   0000-00-00-00-00-00
+#fields ts      gaps    acks    percent_lost
+#types  time    double  double  double
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   datared
+#open   0000-00-00-00-00-00
+#fields ts      conn_red        conn_total      dns_red dns_total       dns_coal_miss   files_red       files_total     files_coal_miss http_red        http_total      ssl_red ssl_total       ssl_coal_miss   weird_red       weird_total     x509_red        x509_total      x509_coal_miss
+#types  time    count   count   count   count   count   count   count   count   count   count   count   count   count   count   count   count   count   count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   dce_rpc
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       rtt     named_pipe      endpoint        operation
+#types  time    string  addr    port    addr    port    interval        string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   dhcp
+#open   0000-00-00-00-00-00
+#fields ts      uids    client_addr     server_addr     mac     host_name       client_fqdn     domain  requested_addr  assigned_addr   lease_time      client_message  server_message  msg_types       duration
+#types  time    set[string]     addr    addr    string  string  string  string  addr    addr    interval        string  string  vector[string]  interval
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   dnp3
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       fc_request      fc_reply        iin
+#types  time    string  addr    port    addr    port    string  string  count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   dns
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
+#types  time    string  addr    port    addr    port    enum    count   interval        string  count   string  count   string  count   string  bool    bool    bool    bool    count   vector[string]  vector[interval]        bool
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   dns_red
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       query   qtype_name      rcode   answers num
+#types  time    string  addr    port    addr    port    string  string  count   vector[string]  count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   dpd
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   analyzer        failure_reason
+#types  time    string  addr    port    addr    port    enum    string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   etc_viz
+#open   0000-00-00-00-00-00
+#fields uid     server_a        server_p        service viz_stat        c2s_viz.size    c2s_viz.enc_dev c2s_viz.enc_frac        c2s_viz.pdu1_enc        c2s_viz.clr_frac        c2s_viz.clr_ex  s2c_viz.size    s2c_viz.enc_dev s2c_viz.enc_frac        s2c_viz.pdu1_enc        s2c_viz.clr_frac        s2c_viz.clr_ex
+#types  string  addr    port    set[string]     string  count   double  double  bool    double  string  count   double  double  bool    double  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   files
+#open   0000-00-00-00-00-00
+#fields ts      fuid    tx_hosts        rx_hosts        conn_uids       source  depth   analyzers       mime_type       filename        duration        local_orig      is_orig seen_bytes      total_bytes     missing_bytes   overflow_bytes  timedout        parent_fuid     md5     sha1    sha256  extracted       extracted_cutoff        extracted_size
+#types  time    string  set[addr]       set[addr]       set[string]     string  count   set[string]     string  string  interval        bool    bool    count   count   count   count   bool    string  string  string  string  string  bool    count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   files_red
+#open   0000-00-00-00-00-00
+#fields ts      fuid    tx_hosts        rx_hosts        conn_uids       source  depth   analyzers       mime_type       filename        local_orig      is_orig seen_bytes      total_bytes     missing_bytes   overflow_bytes  timedout        parent_fuid     extracted       extracted_cutoff        extracted_size  md5     sha1    sha256  num
+#types  vector[time]    string  set[addr]       set[addr]       set[string]     string  count   set[string]     string  string  bool    bool    count   count   count   count   bool    string  set[string]     bool    count   string  string  string  count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   ftp
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       user    password        command arg     mime_type       file_size       reply_code      reply_msg       data_channel.passive    data_channel.orig_h     data_channel.resp_h     data_channel.resp_p     fuid
+#types  time    string  addr    port    addr    port    string  string  string  string  string  count   count   string  bool    addr    addr    port    string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   http
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       trans_depth     method  host    uri     referrer        version user_agent      origin  request_body_len        response_body_len       status_code     status_msg      info_code       info_msg        tags    username        password        proxied orig_fuids      orig_filenames  orig_mime_types resp_fuids      resp_filenames  resp_mime_types
+#types  time    string  addr    port    addr    port    count   string  string  string  string  string  string  string  count   count   count   string  count   string  set[enum]       string  string  set[string]     vector[string]  vector[string]  vector[string]  vector[string]  vector[string]  vector[string]
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   http_red
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       trans_depth     method  host    uri     referrer        version user_agent      request_body_len        response_body_len       status_code     status_msg      info_code       info_msg        tags    username        password        proxied orig_fuids      orig_filenames  orig_mime_types resp_fuids      resp_filenames  resp_mime_types post_body
+#types  time    string  addr    port    addr    port    count   string  string  string  string  string  string  count   count   count   string  count   string  set[enum]       string  string  set[string]     vector[string]  vector[string]  vector[string]  vector[string]  vector[string]  vector[string]  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   intel
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       seen.indicator  seen.indicator_type     seen.where      matched sources fuid    file_mime_type  file_desc
+#types  time    string  addr    port    addr    port    string  enum    enum    set[enum]       set[string]     string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   irc
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       nick    user    command value   addl    dcc_file_name   dcc_file_size   dcc_mime_type   fuid
+#types  time    string  addr    port    addr    port    string  string  string  string  string  string  count   string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   kerberos
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       request_type    client  service success error_msg       from    till    cipher  forwardable     renewable       client_cert_subject     client_cert_fuid        server_cert_subject     server_cert_fuid
+#types  time    string  addr    port    addr    port    string  string  string  bool    string  time    time    string  bool    bool    string  string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   known_certs
+#open   0000-00-00-00-00-00
+#fields ts      host    port_num        subject issuer_subject  serial
+#types  time    addr    port    string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   known_hosts
+#open   0000-00-00-00-00-00
+#fields ts      host
+#types  time    addr
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   known_services
+#open   0000-00-00-00-00-00
+#fields ts      host    port_num        port_proto      service
+#types  time    addr    port    enum    set[string]
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   modbus
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       func    exception
+#types  time    string  addr    port    addr    port    string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   mqtt_connect
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto_name      proto_version   client_id       connect_status  will_topic      will_payload
+#types  time    string  addr    port    addr    port    string  string  string  string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   mqtt_publish
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       from_client     retain  qos     status  topic   payload payload_len
+#types  time    string  addr    port    addr    port    bool    bool    string  string  string  string  count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   mqtt_subscribe
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       action  topics  qos_levels      granted_qos_level       ack
+#types  time    string  addr    port    addr    port    enum    vector[string]  vector[count]   count   bool
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   mysql
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       cmd     arg     success rows    response
+#types  time    string  addr    port    addr    port    string  string  bool    count   string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   namecache
+#open   0000-00-00-00-00-00
+#fields ts      lookups hit_rate_conn   hit_rate_conn_orig_h    hit_rate_conn_resp_h    hit_rate_conn_prod      hit_rate_conn_prod_orig_h       hit_rate_conn_prod_resp_h       hit_rate_conn_int_h     hit_rate_conn_ext_h     src_dns_a       src_dns_aaaa    src_dns_a6      src_dns_ptr     src_unknown     cache_entries   cache_add_tx_ev cache_add_tx_mpg        cache_add_rx_ev cache_add_rx_mpg        cache_add_rx_new        cache_del_mpg
+#types  time    count   double  double  double  double  double  double  double  double  count   count   count   count   count   count   count   count   count   count   count   count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   notice
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       fuid    file_mime_type  file_desc       proto   note    msg     sub     src     dst     p       n       peer_descr      actions email_dest      suppress_for    remote_location.country_code    remote_location.region  remote_location.city    remote_location.latitude        remote_location.longitude
+#types  time    string  addr    port    addr    port    string  string  string  enum    enum    string  string  addr    addr    port    count   string  set[enum]       set[string]     interval        string  string  string  double  double
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   ntlm
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       username        hostname        domainname      server_nb_computer_name server_dns_computer_name        server_tree_name        success
+#types  time    string  addr    port    addr    port    string  string  string  string  string  string  bool
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   ntp
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       version mode    stratum poll    precision       root_delay      root_disp       ref_id  ref_time        org_time        rec_time        xmt_time        num_exts
+#types  time    string  addr    port    addr    port    count   count   count   interval        interval        interval        interval        string  time    time    time    time    count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   ocsp
+#open   0000-00-00-00-00-00
+#fields ts      id      hashAlgorithm   issuerNameHash  issuerKeyHash   serialNumber    certStatus      revoketime      revokereason    thisUpdate      nextUpdate
+#types  time    string  string  string  string  string  string  time    string  time    time
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   open_conn
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   service duration        orig_bytes      resp_bytes      conn_state      local_orig      local_resp      missed_bytes    history orig_pkts       orig_ip_bytes   resp_pkts       resp_ip_bytes   tunnel_parents
+#types  time    string  addr    port    addr    port    enum    string  interval        count   count   string  bool    bool    count   string  count   count   count   count   set[string]
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   packet_filter
+#open   0000-00-00-00-00-00
+#fields ts      node    filter  init    success
+#types  time    string  string  bool    bool
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   pe
+#open   0000-00-00-00-00-00
+#fields ts      id      machine compile_ts      os      subsystem       is_exe  is_64bit        uses_aslr       uses_dep        uses_code_integrity     uses_seh        has_import_table        has_export_table        has_cert_table  has_debug_data  section_names
+#types  time    string  string  time    string  string  bool    bool    bool    bool    bool    bool    bool    bool    bool    bool    vector[string]
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   radius
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       username        mac     framed_addr     remote_ip       connect_info    reply_msg       result  ttl
+#types  time    string  addr    port    addr    port    string  string  addr    addr    string  string  string  interval
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   rdp
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       cookie  result  security_protocol       keyboard_layout client_build    client_name     client_dig_product_id   desktop_width   desktop_height  requested_color_depth   cert_type       cert_count      cert_permanent  encryption_level        encryption_method
+#types  time    string  addr    port    addr    port    string  string  string  string  string  string  string  count   count   string  string  count   bool    string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   reporter
+#open   0000-00-00-00-00-00
+#fields ts      level   message location
+#types  time    enum    string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   rfb
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       client_major_version    client_minor_version    server_major_version    server_minor_version    authentication_method   auth    share_flag      desktop_name    width   height
+#types  time    string  addr    port    addr    port    string  string  string  string  string  bool    bool    string  count   count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   signatures
+#open   0000-00-00-00-00-00
+#fields ts      uid     src_addr        src_port        dst_addr        dst_port        note    sig_id  event_msg       sub_msg sig_count       host_count
+#types  time    string  addr    port    addr    port    enum    string  string  string  count   count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   sip
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       trans_depth     method  uri     date    request_from    request_to      response_from   response_to     reply_to        call_id seq     subject request_path    response_path   user_agent      status_code     status_msg      warning request_body_len        response_body_len       content_type
+#types  time    string  addr    port    addr    port    count   string  string  string  string  string  string  string  string  string  string  string  vector[string]  vector[string]  string  count   string  string  count   count   string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   smb_files
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       fuid    action  path    name    size    prev_name       times.modified  times.accessed  times.created   times.changed   data_offset_req data_len_req    data_len_rsp
+#types  time    string  addr    port    addr    port    string  enum    string  string  count   string  time    time    time    time    count   count   count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   smb_mapping
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       path    service native_file_system      share_type
+#types  time    string  addr    port    addr    port    string  string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   smtp
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       trans_depth     helo    mailfrom        rcptto  date    from    to      cc      reply_to        msg_id  in_reply_to     subject x_originating_ip        first_received  second_received last_reply      path    user_agent      tls     fuids   is_webmail
+#types  time    string  addr    port    addr    port    count   string  string  set[string]     string  string  set[string]     set[string]     string  string  string  string  addr    string  string  string  vector[addr]    string  bool    vector[string]  bool
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   snmp
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       duration        version community       get_requests    get_bulk_requests       get_responses   set_requests    display_string  up_since
+#types  time    string  addr    port    addr    port    interval        string  string  count   count   count   count   string  time
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   socks
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       version user    password        status  request.host    request.name    request_p       bound.host      bound.name      bound_p
+#types  time    string  addr    port    addr    port    count   string  string  string  addr    string  port    addr    string  port
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   software
+#open   0000-00-00-00-00-00
+#fields ts      host    host_p  software_type   name    version.major   version.minor   version.minor2  version.minor3  version.addl    unparsed_version
+#types  time    addr    port    enum    string  count   count   count   count   string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   ssh
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       version auth_success    auth_attempts   direction       client  server  cipher_alg      mac_alg compression_alg kex_alg host_key_alg    host_key
+#types  time    string  addr    port    addr    port    count   bool    count   enum    string  string  string  string  string  string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   ssl
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       version cipher  curve   server_name     resumed last_alert      next_protocol   established     ssl_history     cert_chain_fps  client_cert_chain_fps   sni_matches_cert        validation_status       ja3     ja3s
+#types  time    string  addr    port    addr    port    string  string  string  string  bool    string  string  bool    string  vector[string]  vector[string]  bool    string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   ssl_red
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       version cipher  curve   server_name     resumed last_alert      next_protocol   established     cert_chain_fuids        client_cert_chain_fuids subject issuer  client_subject  client_issuer   validation_status       ja3     ja3s
+#types  time    string  addr    port    addr    port    string  string  string  string  bool    string  string  bool    vector[string]  vector[string]  string  string  string  string  string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   stats
+#open   0000-00-00-00-00-00
+#fields ts      peer    mem     pkts_proc       bytes_recv      pkts_dropped    pkts_link       pkt_lag events_proc     events_queued   active_tcp_conns        active_udp_conns        active_icmp_conns       tcp_conns       udp_conns       icmp_conns      timers  active_timers   files   active_files    dns_requests    active_dns_requests     reassem_tcp_size        reassem_file_size       reassem_frag_size       reassem_unknown_size
+#types  time    string  count   count   count   count   count   interval        count   count   count   count   count   count   count   count   count   count   count   count   count   count   count   count   count   count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   syslog
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   facility        severity        message
+#types  time    string  addr    port    addr    port    enum    string  string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   traceroute
+#open   0000-00-00-00-00-00
+#fields ts      src     dst     proto
+#types  time    addr    addr    string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   tunnel
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       tunnel_type     action
+#types  time    string  addr    port    addr    port    enum    enum
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   weird
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       name    addl    notice  peer    source
+#types  time    string  addr    port    addr    port    string  string  bool    string  string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   weird_red
+#open   0000-00-00-00-00-00
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       name    addl    notice  peer
+#types  time    string  addr    port    addr    port    string  string  bool    string
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   x509
+#open   0000-00-00-00-00-00
+#fields ts      fingerprint     certificate.version     certificate.serial      certificate.subject     certificate.issuer      certificate.not_valid_before    certificate.not_valid_after     certificate.key_alg     certificate.sig_alg     certificate.key_type    certificate.key_length  certificate.exponent    certificate.curve       san.dns san.uri san.email       san.ip  basic_constraints.ca    basic_constraints.path_len      host_cert       client_cert
+#types  time    string  count   string  string  string  time    time    string  string  string  count   string  string  vector[string]  vector[string]  vector[string]  vector[addr]    bool    count   bool    bool
+#close  9999-12-31-23-59-59&#34;&#34;&#34;,
+r&#34;&#34;&#34;#separator \x09
+#set_separator  ,
+#empty_field    (empty)
+#unset_field    -
+#path   x509_red
+#open   0000-00-00-00-00-00
+#fields ts      id      certificate.version     certificate.serial      certificate.subject     certificate.issuer      certificate.not_valid_before    certificate.not_valid_after     certificate.key_alg     certificate.sig_alg     certificate.key_type    certificate.key_length  certificate.exponent    certificate.curve       san.dns san.uri san.email       san.ip  basic_constraints.ca    basic_constraints.path_len
+#types  time    string  count   string  string  string  time    time    string  string  string  count   string  string  vector[string]  vector[string]  vector[string]  vector[addr]    bool    count
+#close  9999-12-31-23-59-59&#34;&#34;&#34;
+]
+
+
+#Originally this was supposed to be key=fieldname, value=fieldtype (like &#39;ts_delta&#39;: &#39;interval&#39; below.
+#Unfortunately these are not fixed.  For example, &#39;version&#39; is a &#39;string&#39; in 5 headers (called &#39;paths&#39;)
+#but &#39;count&#39; in 3 others.  For that reason, some of these are key=(fieldname, path), value=fieldtype , so
+#you have to check for both fieldname and (fieldname. path) as keys when accessing this; see top of correct_var_format
+static_field_types: dict = {(&#39;ts&#39;, &#39;app_stats&#39;): &#39;time&#39;, &#39;ts_delta&#39;: &#39;interval&#39;, &#39;app&#39;: &#39;string&#39;, &#39;uniq_hosts&#39;: &#39;count&#39;, &#39;hits&#39;: &#39;count&#39;, &#39;bytes&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;broker&#39;): &#39;time&#39;, &#39;ty&#39;: &#39;enum&#39;, &#39;ev&#39;: &#39;string&#39;, &#39;peer.address&#39;: &#39;string&#39;, &#39;peer.bound_port&#39;: &#39;port&#39;, &#39;message&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;capture_loss&#39;): &#39;time&#39;, &#39;peer&#39;: &#39;string&#39;, (&#39;gaps&#39;, &#39;capture_loss&#39;): &#39;count&#39;, (&#39;acks&#39;, &#39;capture_loss&#39;): &#39;count&#39;, &#39;percent_lost&#39;: &#39;double&#39;, (&#39;ts&#39;, &#39;cluster&#39;): &#39;time&#39;, &#39;node&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;communication&#39;): &#39;time&#39;, &#39;src_name&#39;: &#39;string&#39;, &#39;connected_peer_desc&#39;: &#39;string&#39;, &#39;connected_peer_addr&#39;: &#39;addr&#39;, &#39;connected_peer_port&#39;: &#39;port&#39;, (&#39;level&#39;, &#39;communication&#39;): &#39;string&#39;, &#39;_node_name&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;conn&#39;): &#39;time&#39;, &#39;uid&#39;: &#39;string&#39;, &#39;id.orig_h&#39;: &#39;addr&#39;, &#39;id.orig_p&#39;: &#39;port&#39;, &#39;id.resp_h&#39;: &#39;addr&#39;, &#39;id.resp_p&#39;: &#39;port&#39;, (&#39;proto&#39;, &#39;conn&#39;): &#39;enum&#39;, (&#39;service&#39;, &#39;conn&#39;): &#39;string&#39;, &#39;duration&#39;: &#39;interval&#39;, &#39;orig_bytes&#39;: &#39;count&#39;, &#39;resp_bytes&#39;: &#39;count&#39;, &#39;conn_state&#39;: &#39;string&#39;, &#39;local_orig&#39;: &#39;bool&#39;, &#39;local_resp&#39;: &#39;bool&#39;, &#39;missed_bytes&#39;: &#39;count&#39;, &#39;history&#39;: &#39;string&#39;, &#39;orig_pkts&#39;: &#39;count&#39;, &#39;orig_ip_bytes&#39;: &#39;count&#39;, &#39;resp_pkts&#39;: &#39;count&#39;, &#39;resp_ip_bytes&#39;: &#39;count&#39;, &#39;tunnel_parents&#39;: &#39;set[string]&#39;, (&#39;ts&#39;, &#39;conn_red&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;conn_red&#39;): &#39;enum&#39;, (&#39;service&#39;, &#39;conn_red&#39;): &#39;string&#39;, &#39;orig_cc&#39;: &#39;string&#39;, &#39;resp_cc&#39;: &#39;string&#39;, &#39;orig_l2_addr&#39;: &#39;string&#39;, &#39;resp_l2_addr&#39;: &#39;string&#39;, &#39;vlan&#39;: &#39;int&#39;, &#39;inner_vlan&#39;: &#39;int&#39;, &#39;community_id&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;corelight_burst&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;corelight_burst&#39;): &#39;enum&#39;, &#39;orig_size&#39;: &#39;count&#39;, &#39;resp_size&#39;: &#39;count&#39;, &#39;mbps&#39;: &#39;double&#39;, &#39;age_of_conn&#39;: &#39;interval&#39;, (&#39;ts&#39;, &#39;corelight_overall_capture_loss&#39;): &#39;time&#39;, (&#39;gaps&#39;, &#39;corelight_overall_capture_loss&#39;): &#39;double&#39;, (&#39;acks&#39;, &#39;corelight_overall_capture_loss&#39;): &#39;double&#39;, (&#39;ts&#39;, &#39;datared&#39;): &#39;time&#39;, &#39;conn_red&#39;: &#39;count&#39;, &#39;conn_total&#39;: &#39;count&#39;, &#39;dns_red&#39;: &#39;count&#39;, &#39;dns_total&#39;: &#39;count&#39;, &#39;dns_coal_miss&#39;: &#39;count&#39;, &#39;files_red&#39;: &#39;count&#39;, &#39;files_total&#39;: &#39;count&#39;, &#39;files_coal_miss&#39;: &#39;count&#39;, &#39;http_red&#39;: &#39;count&#39;, &#39;http_total&#39;: &#39;count&#39;, &#39;ssl_red&#39;: &#39;count&#39;, &#39;ssl_total&#39;: &#39;count&#39;, &#39;ssl_coal_miss&#39;: &#39;count&#39;, &#39;weird_red&#39;: &#39;count&#39;, &#39;weird_total&#39;: &#39;count&#39;, &#39;x509_red&#39;: &#39;count&#39;, &#39;x509_total&#39;: &#39;count&#39;, &#39;x509_coal_miss&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;dce_rpc&#39;): &#39;time&#39;, &#39;rtt&#39;: &#39;interval&#39;, &#39;named_pipe&#39;: &#39;string&#39;, &#39;endpoint&#39;: &#39;string&#39;, &#39;operation&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;dhcp&#39;): &#39;time&#39;, &#39;uids&#39;: &#39;set[string]&#39;, &#39;client_addr&#39;: &#39;addr&#39;, &#39;server_addr&#39;: &#39;addr&#39;, &#39;mac&#39;: &#39;string&#39;, &#39;host_name&#39;: &#39;string&#39;, &#39;client_fqdn&#39;: &#39;string&#39;, &#39;domain&#39;: &#39;string&#39;, &#39;requested_addr&#39;: &#39;addr&#39;, &#39;assigned_addr&#39;: &#39;addr&#39;, &#39;lease_time&#39;: &#39;interval&#39;, &#39;client_message&#39;: &#39;string&#39;, &#39;server_message&#39;: &#39;string&#39;, &#39;msg_types&#39;: &#39;vector[string]&#39;, (&#39;ts&#39;, &#39;dnp3&#39;): &#39;time&#39;, &#39;fc_request&#39;: &#39;string&#39;, &#39;fc_reply&#39;: &#39;string&#39;, &#39;iin&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;dns&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;dns&#39;): &#39;enum&#39;, &#39;trans_id&#39;: &#39;count&#39;, &#39;query&#39;: &#39;string&#39;, &#39;qclass&#39;: &#39;count&#39;, &#39;qclass_name&#39;: &#39;string&#39;, &#39;qtype&#39;: &#39;count&#39;, &#39;qtype_name&#39;: &#39;string&#39;, &#39;rcode&#39;: &#39;count&#39;, &#39;rcode_name&#39;: &#39;string&#39;, &#39;AA&#39;: &#39;bool&#39;, &#39;TC&#39;: &#39;bool&#39;, &#39;RD&#39;: &#39;bool&#39;, &#39;RA&#39;: &#39;bool&#39;, &#39;Z&#39;: &#39;count&#39;, &#39;answers&#39;: &#39;vector[string]&#39;, &#39;TTLs&#39;: &#39;vector[interval]&#39;, &#39;rejected&#39;: &#39;bool&#39;, (&#39;ts&#39;, &#39;dns_red&#39;): &#39;time&#39;, &#39;num&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;dpd&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;dpd&#39;): &#39;enum&#39;, &#39;analyzer&#39;: &#39;string&#39;, &#39;failure_reason&#39;: &#39;string&#39;, &#39;server_a&#39;: &#39;addr&#39;, &#39;server_p&#39;: &#39;port&#39;, (&#39;service&#39;, &#39;etc_viz&#39;): &#39;set[string]&#39;, &#39;viz_stat&#39;: &#39;string&#39;, &#39;c2s_viz.size&#39;: &#39;count&#39;, &#39;c2s_viz.enc_dev&#39;: &#39;double&#39;, &#39;c2s_viz.enc_frac&#39;: &#39;double&#39;, &#39;c2s_viz.pdu1_enc&#39;: &#39;bool&#39;, &#39;c2s_viz.clr_frac&#39;: &#39;double&#39;, &#39;c2s_viz.clr_ex&#39;: &#39;string&#39;, &#39;s2c_viz.size&#39;: &#39;count&#39;, &#39;s2c_viz.enc_dev&#39;: &#39;double&#39;, &#39;s2c_viz.enc_frac&#39;: &#39;double&#39;, &#39;s2c_viz.pdu1_enc&#39;: &#39;bool&#39;, &#39;s2c_viz.clr_frac&#39;: &#39;double&#39;, &#39;s2c_viz.clr_ex&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;files&#39;): &#39;time&#39;, &#39;fuid&#39;: &#39;string&#39;, &#39;tx_hosts&#39;: &#39;set[addr]&#39;, &#39;rx_hosts&#39;: &#39;set[addr]&#39;, &#39;conn_uids&#39;: &#39;set[string]&#39;, &#39;source&#39;: &#39;string&#39;, &#39;depth&#39;: &#39;count&#39;, &#39;analyzers&#39;: &#39;set[string]&#39;, &#39;mime_type&#39;: &#39;string&#39;, &#39;filename&#39;: &#39;string&#39;, &#39;is_orig&#39;: &#39;bool&#39;, &#39;seen_bytes&#39;: &#39;count&#39;, &#39;total_bytes&#39;: &#39;count&#39;, &#39;missing_bytes&#39;: &#39;count&#39;, &#39;overflow_bytes&#39;: &#39;count&#39;, &#39;timedout&#39;: &#39;bool&#39;, &#39;parent_fuid&#39;: &#39;string&#39;, &#39;md5&#39;: &#39;string&#39;, &#39;sha1&#39;: &#39;string&#39;, &#39;sha256&#39;: &#39;string&#39;, (&#39;extracted&#39;, &#39;files&#39;): &#39;string&#39;, &#39;extracted_cutoff&#39;: &#39;bool&#39;, &#39;extracted_size&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;files_red&#39;): &#39;vector[time]&#39;, (&#39;extracted&#39;, &#39;files_red&#39;): &#39;set[string]&#39;, (&#39;ts&#39;, &#39;ftp&#39;): &#39;time&#39;, &#39;user&#39;: &#39;string&#39;, &#39;password&#39;: &#39;string&#39;, &#39;command&#39;: &#39;string&#39;, &#39;arg&#39;: &#39;string&#39;, &#39;file_size&#39;: &#39;count&#39;, &#39;reply_code&#39;: &#39;count&#39;, &#39;reply_msg&#39;: &#39;string&#39;, &#39;data_channel.passive&#39;: &#39;bool&#39;, &#39;data_channel.orig_h&#39;: &#39;addr&#39;, &#39;data_channel.resp_h&#39;: &#39;addr&#39;, &#39;data_channel.resp_p&#39;: &#39;port&#39;, (&#39;ts&#39;, &#39;http&#39;): &#39;time&#39;, &#39;trans_depth&#39;: &#39;count&#39;, &#39;method&#39;: &#39;string&#39;, (&#39;host&#39;, &#39;http&#39;): &#39;string&#39;, &#39;uri&#39;: &#39;string&#39;, &#39;referrer&#39;: &#39;string&#39;, (&#39;version&#39;, &#39;http&#39;): &#39;string&#39;, &#39;user_agent&#39;: &#39;string&#39;, &#39;origin&#39;: &#39;string&#39;, &#39;request_body_len&#39;: &#39;count&#39;, &#39;response_body_len&#39;: &#39;count&#39;, &#39;status_code&#39;: &#39;count&#39;, &#39;status_msg&#39;: &#39;string&#39;, &#39;info_code&#39;: &#39;count&#39;, &#39;info_msg&#39;: &#39;string&#39;, &#39;tags&#39;: &#39;set[enum]&#39;, &#39;username&#39;: &#39;string&#39;, &#39;proxied&#39;: &#39;set[string]&#39;, &#39;orig_fuids&#39;: &#39;vector[string]&#39;, &#39;orig_filenames&#39;: &#39;vector[string]&#39;, &#39;orig_mime_types&#39;: &#39;vector[string]&#39;, &#39;resp_fuids&#39;: &#39;vector[string]&#39;, &#39;resp_filenames&#39;: &#39;vector[string]&#39;, &#39;resp_mime_types&#39;: &#39;vector[string]&#39;, (&#39;ts&#39;, &#39;http_red&#39;): &#39;time&#39;, (&#39;host&#39;, &#39;http_red&#39;): &#39;string&#39;, (&#39;version&#39;, &#39;http_red&#39;): &#39;string&#39;, &#39;post_body&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;intel&#39;): &#39;time&#39;, &#39;seen.indicator&#39;: &#39;string&#39;, &#39;seen.indicator_type&#39;: &#39;enum&#39;, &#39;seen.where&#39;: &#39;enum&#39;, &#39;matched&#39;: &#39;set[enum]&#39;, &#39;sources&#39;: &#39;set[string]&#39;, &#39;file_mime_type&#39;: &#39;string&#39;, &#39;file_desc&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;irc&#39;): &#39;time&#39;, &#39;nick&#39;: &#39;string&#39;, &#39;value&#39;: &#39;string&#39;, &#39;addl&#39;: &#39;string&#39;, &#39;dcc_file_name&#39;: &#39;string&#39;, &#39;dcc_file_size&#39;: &#39;count&#39;, &#39;dcc_mime_type&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;kerberos&#39;): &#39;time&#39;, &#39;request_type&#39;: &#39;string&#39;, &#39;client&#39;: &#39;string&#39;, (&#39;service&#39;, &#39;kerberos&#39;): &#39;string&#39;, &#39;success&#39;: &#39;bool&#39;, &#39;error_msg&#39;: &#39;string&#39;, (&#39;from&#39;, &#39;kerberos&#39;): &#39;time&#39;, &#39;till&#39;: &#39;time&#39;, &#39;cipher&#39;: &#39;string&#39;, &#39;forwardable&#39;: &#39;bool&#39;, &#39;renewable&#39;: &#39;bool&#39;, &#39;client_cert_subject&#39;: &#39;string&#39;, &#39;client_cert_fuid&#39;: &#39;string&#39;, &#39;server_cert_subject&#39;: &#39;string&#39;, &#39;server_cert_fuid&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;known_certs&#39;): &#39;time&#39;, (&#39;host&#39;, &#39;known_certs&#39;): &#39;addr&#39;, &#39;port_num&#39;: &#39;port&#39;, &#39;subject&#39;: &#39;string&#39;, &#39;issuer_subject&#39;: &#39;string&#39;, &#39;serial&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;known_hosts&#39;): &#39;time&#39;, (&#39;host&#39;, &#39;known_hosts&#39;): &#39;addr&#39;, (&#39;ts&#39;, &#39;known_services&#39;): &#39;time&#39;, (&#39;host&#39;, &#39;known_services&#39;): &#39;addr&#39;, &#39;port_proto&#39;: &#39;enum&#39;, (&#39;service&#39;, &#39;known_services&#39;): &#39;set[string]&#39;, (&#39;ts&#39;, &#39;modbus&#39;): &#39;time&#39;, &#39;func&#39;: &#39;string&#39;, &#39;exception&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;mqtt_connect&#39;): &#39;time&#39;, &#39;proto_name&#39;: &#39;string&#39;, &#39;proto_version&#39;: &#39;string&#39;, &#39;client_id&#39;: &#39;string&#39;, &#39;connect_status&#39;: &#39;string&#39;, &#39;will_topic&#39;: &#39;string&#39;, &#39;will_payload&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;mqtt_publish&#39;): &#39;time&#39;, &#39;from_client&#39;: &#39;bool&#39;, &#39;retain&#39;: &#39;bool&#39;, &#39;qos&#39;: &#39;string&#39;, &#39;status&#39;: &#39;string&#39;, &#39;topic&#39;: &#39;string&#39;, &#39;payload&#39;: &#39;string&#39;, &#39;payload_len&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;mqtt_subscribe&#39;): &#39;time&#39;, &#39;action&#39;: &#39;enum&#39;, &#39;topics&#39;: &#39;vector[string]&#39;, &#39;qos_levels&#39;: &#39;vector[count]&#39;, &#39;granted_qos_level&#39;: &#39;count&#39;, &#39;ack&#39;: &#39;bool&#39;, (&#39;ts&#39;, &#39;mysql&#39;): &#39;time&#39;, &#39;cmd&#39;: &#39;string&#39;, &#39;rows&#39;: &#39;count&#39;, &#39;response&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;namecache&#39;): &#39;time&#39;, &#39;lookups&#39;: &#39;count&#39;, &#39;hit_rate_conn&#39;: &#39;double&#39;, &#39;hit_rate_conn_orig_h&#39;: &#39;double&#39;, &#39;hit_rate_conn_resp_h&#39;: &#39;double&#39;, &#39;hit_rate_conn_prod&#39;: &#39;double&#39;, &#39;hit_rate_conn_prod_orig_h&#39;: &#39;double&#39;, &#39;hit_rate_conn_prod_resp_h&#39;: &#39;double&#39;, &#39;hit_rate_conn_int_h&#39;: &#39;double&#39;, &#39;hit_rate_conn_ext_h&#39;: &#39;double&#39;, &#39;src_dns_a&#39;: &#39;count&#39;, &#39;src_dns_aaaa&#39;: &#39;count&#39;, &#39;src_dns_a6&#39;: &#39;count&#39;, &#39;src_dns_ptr&#39;: &#39;count&#39;, &#39;src_unknown&#39;: &#39;count&#39;, &#39;cache_entries&#39;: &#39;count&#39;, &#39;cache_add_tx_ev&#39;: &#39;count&#39;, &#39;cache_add_tx_mpg&#39;: &#39;count&#39;, &#39;cache_add_rx_ev&#39;: &#39;count&#39;, &#39;cache_add_rx_mpg&#39;: &#39;count&#39;, &#39;cache_add_rx_new&#39;: &#39;count&#39;, &#39;cache_del_mpg&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;notice&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;notice&#39;): &#39;enum&#39;, &#39;note&#39;: &#39;enum&#39;, &#39;msg&#39;: &#39;string&#39;, &#39;sub&#39;: &#39;string&#39;, &#39;src&#39;: &#39;addr&#39;, &#39;dst&#39;: &#39;addr&#39;, &#39;p&#39;: &#39;port&#39;, &#39;n&#39;: &#39;count&#39;, &#39;peer_descr&#39;: &#39;string&#39;, &#39;actions&#39;: &#39;set[enum]&#39;, &#39;email_dest&#39;: &#39;set[string]&#39;, &#39;suppress_for&#39;: &#39;interval&#39;, &#39;remote_location.country_code&#39;: &#39;string&#39;, &#39;remote_location.region&#39;: &#39;string&#39;, &#39;remote_location.city&#39;: &#39;string&#39;, &#39;remote_location.latitude&#39;: &#39;double&#39;, &#39;remote_location.longitude&#39;: &#39;double&#39;, (&#39;ts&#39;, &#39;ntlm&#39;): &#39;time&#39;, &#39;hostname&#39;: &#39;string&#39;, &#39;domainname&#39;: &#39;string&#39;, &#39;server_nb_computer_name&#39;: &#39;string&#39;, &#39;server_dns_computer_name&#39;: &#39;string&#39;, &#39;server_tree_name&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;ntp&#39;): &#39;time&#39;, (&#39;version&#39;, &#39;ntp&#39;): &#39;count&#39;, &#39;mode&#39;: &#39;count&#39;, &#39;stratum&#39;: &#39;count&#39;, &#39;poll&#39;: &#39;interval&#39;, &#39;precision&#39;: &#39;interval&#39;, &#39;root_delay&#39;: &#39;interval&#39;, &#39;root_disp&#39;: &#39;interval&#39;, &#39;ref_id&#39;: &#39;string&#39;, &#39;ref_time&#39;: &#39;time&#39;, &#39;org_time&#39;: &#39;time&#39;, &#39;rec_time&#39;: &#39;time&#39;, &#39;xmt_time&#39;: &#39;time&#39;, &#39;num_exts&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;ocsp&#39;): &#39;time&#39;, &#39;id&#39;: &#39;string&#39;, &#39;hashAlgorithm&#39;: &#39;string&#39;, &#39;issuerNameHash&#39;: &#39;string&#39;, &#39;issuerKeyHash&#39;: &#39;string&#39;, &#39;serialNumber&#39;: &#39;string&#39;, &#39;certStatus&#39;: &#39;string&#39;, &#39;revoketime&#39;: &#39;time&#39;, &#39;revokereason&#39;: &#39;string&#39;, &#39;thisUpdate&#39;: &#39;time&#39;, &#39;nextUpdate&#39;: &#39;time&#39;, (&#39;ts&#39;, &#39;open_conn&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;open_conn&#39;): &#39;enum&#39;, (&#39;service&#39;, &#39;open_conn&#39;): &#39;string&#39;, (&#39;ts&#39;, &#39;packet_filter&#39;): &#39;time&#39;, &#39;filter&#39;: &#39;string&#39;, &#39;init&#39;: &#39;bool&#39;, (&#39;ts&#39;, &#39;pe&#39;): &#39;time&#39;, &#39;machine&#39;: &#39;string&#39;, &#39;compile_ts&#39;: &#39;time&#39;, &#39;os&#39;: &#39;string&#39;, &#39;subsystem&#39;: &#39;string&#39;, &#39;is_exe&#39;: &#39;bool&#39;, &#39;is_64bit&#39;: &#39;bool&#39;, &#39;uses_aslr&#39;: &#39;bool&#39;, &#39;uses_dep&#39;: &#39;bool&#39;, &#39;uses_code_integrity&#39;: &#39;bool&#39;, &#39;uses_seh&#39;: &#39;bool&#39;, &#39;has_import_table&#39;: &#39;bool&#39;, &#39;has_export_table&#39;: &#39;bool&#39;, &#39;has_cert_table&#39;: &#39;bool&#39;, &#39;has_debug_data&#39;: &#39;bool&#39;, &#39;section_names&#39;: &#39;vector[string]&#39;, (&#39;ts&#39;, &#39;radius&#39;): &#39;time&#39;, &#39;framed_addr&#39;: &#39;addr&#39;, &#39;remote_ip&#39;: &#39;addr&#39;, &#39;connect_info&#39;: &#39;string&#39;, &#39;result&#39;: &#39;string&#39;, &#39;ttl&#39;: &#39;interval&#39;, (&#39;ts&#39;, &#39;rdp&#39;): &#39;time&#39;, &#39;cookie&#39;: &#39;string&#39;, &#39;security_protocol&#39;: &#39;string&#39;, &#39;keyboard_layout&#39;: &#39;string&#39;, &#39;client_build&#39;: &#39;string&#39;, &#39;client_name&#39;: &#39;string&#39;, &#39;client_dig_product_id&#39;: &#39;string&#39;, &#39;desktop_width&#39;: &#39;count&#39;, &#39;desktop_height&#39;: &#39;count&#39;, &#39;requested_color_depth&#39;: &#39;string&#39;, &#39;cert_type&#39;: &#39;string&#39;, &#39;cert_count&#39;: &#39;count&#39;, &#39;cert_permanent&#39;: &#39;bool&#39;, &#39;encryption_level&#39;: &#39;string&#39;, &#39;encryption_method&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;reporter&#39;): &#39;time&#39;, (&#39;level&#39;, &#39;reporter&#39;): &#39;enum&#39;, &#39;location&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;rfb&#39;): &#39;time&#39;, &#39;client_major_version&#39;: &#39;string&#39;, &#39;client_minor_version&#39;: &#39;string&#39;, &#39;server_major_version&#39;: &#39;string&#39;, &#39;server_minor_version&#39;: &#39;string&#39;, &#39;authentication_method&#39;: &#39;string&#39;, &#39;auth&#39;: &#39;bool&#39;, &#39;share_flag&#39;: &#39;bool&#39;, &#39;desktop_name&#39;: &#39;string&#39;, &#39;width&#39;: &#39;count&#39;, &#39;height&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;signatures&#39;): &#39;time&#39;, &#39;src_addr&#39;: &#39;addr&#39;, &#39;src_port&#39;: &#39;port&#39;, &#39;dst_addr&#39;: &#39;addr&#39;, &#39;dst_port&#39;: &#39;port&#39;, &#39;sig_id&#39;: &#39;string&#39;, &#39;event_msg&#39;: &#39;string&#39;, &#39;sub_msg&#39;: &#39;string&#39;, &#39;sig_count&#39;: &#39;count&#39;, &#39;host_count&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;sip&#39;): &#39;time&#39;, &#39;date&#39;: &#39;string&#39;, &#39;request_from&#39;: &#39;string&#39;, &#39;request_to&#39;: &#39;string&#39;, &#39;response_from&#39;: &#39;string&#39;, &#39;response_to&#39;: &#39;string&#39;, &#39;reply_to&#39;: &#39;string&#39;, &#39;call_id&#39;: &#39;string&#39;, &#39;seq&#39;: &#39;string&#39;, &#39;request_path&#39;: &#39;vector[string]&#39;, &#39;response_path&#39;: &#39;vector[string]&#39;, &#39;warning&#39;: &#39;string&#39;, &#39;content_type&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;smb_files&#39;): &#39;time&#39;, (&#39;path&#39;, &#39;smb_files&#39;): &#39;string&#39;, &#39;name&#39;: &#39;string&#39;, &#39;size&#39;: &#39;count&#39;, &#39;prev_name&#39;: &#39;string&#39;, &#39;times.modified&#39;: &#39;time&#39;, &#39;times.accessed&#39;: &#39;time&#39;, &#39;times.created&#39;: &#39;time&#39;, &#39;times.changed&#39;: &#39;time&#39;, &#39;data_offset_req&#39;: &#39;count&#39;, &#39;data_len_req&#39;: &#39;count&#39;, &#39;data_len_rsp&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;smb_mapping&#39;): &#39;time&#39;, (&#39;path&#39;, &#39;smb_mapping&#39;): &#39;string&#39;, (&#39;service&#39;, &#39;smb_mapping&#39;): &#39;string&#39;, &#39;native_file_system&#39;: &#39;string&#39;, &#39;share_type&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;smtp&#39;): &#39;time&#39;, &#39;helo&#39;: &#39;string&#39;, &#39;mailfrom&#39;: &#39;string&#39;, &#39;rcptto&#39;: &#39;set[string]&#39;, (&#39;from&#39;, &#39;smtp&#39;): &#39;string&#39;, &#39;to&#39;: &#39;set[string]&#39;, &#39;cc&#39;: &#39;set[string]&#39;, &#39;msg_id&#39;: &#39;string&#39;, &#39;in_reply_to&#39;: &#39;string&#39;, &#39;x_originating_ip&#39;: &#39;addr&#39;, &#39;first_received&#39;: &#39;string&#39;, &#39;second_received&#39;: &#39;string&#39;, &#39;last_reply&#39;: &#39;string&#39;, (&#39;path&#39;, &#39;smtp&#39;): &#39;vector[addr]&#39;, &#39;tls&#39;: &#39;bool&#39;, &#39;fuids&#39;: &#39;vector[string]&#39;, &#39;is_webmail&#39;: &#39;bool&#39;, (&#39;ts&#39;, &#39;snmp&#39;): &#39;time&#39;, (&#39;version&#39;, &#39;snmp&#39;): &#39;string&#39;, &#39;community&#39;: &#39;string&#39;, &#39;get_requests&#39;: &#39;count&#39;, &#39;get_bulk_requests&#39;: &#39;count&#39;, &#39;get_responses&#39;: &#39;count&#39;, &#39;set_requests&#39;: &#39;count&#39;, &#39;display_string&#39;: &#39;string&#39;, &#39;up_since&#39;: &#39;time&#39;, (&#39;ts&#39;, &#39;socks&#39;): &#39;time&#39;, (&#39;version&#39;, &#39;socks&#39;): &#39;count&#39;, &#39;request.host&#39;: &#39;addr&#39;, &#39;request.name&#39;: &#39;string&#39;, &#39;request_p&#39;: &#39;port&#39;, &#39;bound.host&#39;: &#39;addr&#39;, &#39;bound.name&#39;: &#39;string&#39;, &#39;bound_p&#39;: &#39;port&#39;, (&#39;ts&#39;, &#39;software&#39;): &#39;time&#39;, (&#39;host&#39;, &#39;software&#39;): &#39;addr&#39;, &#39;host_p&#39;: &#39;port&#39;, &#39;software_type&#39;: &#39;enum&#39;, &#39;version.major&#39;: &#39;count&#39;, &#39;version.minor&#39;: &#39;count&#39;, &#39;version.minor2&#39;: &#39;count&#39;, &#39;version.minor3&#39;: &#39;count&#39;, &#39;version.addl&#39;: &#39;string&#39;, &#39;unparsed_version&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;ssh&#39;): &#39;time&#39;, (&#39;version&#39;, &#39;ssh&#39;): &#39;count&#39;, &#39;auth_success&#39;: &#39;bool&#39;, &#39;auth_attempts&#39;: &#39;count&#39;, &#39;direction&#39;: &#39;enum&#39;, &#39;server&#39;: &#39;string&#39;, &#39;cipher_alg&#39;: &#39;string&#39;, &#39;mac_alg&#39;: &#39;string&#39;, &#39;compression_alg&#39;: &#39;string&#39;, &#39;kex_alg&#39;: &#39;string&#39;, &#39;host_key_alg&#39;: &#39;string&#39;, &#39;host_key&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;ssl&#39;): &#39;time&#39;, (&#39;version&#39;, &#39;ssl&#39;): &#39;string&#39;, &#39;curve&#39;: &#39;string&#39;, &#39;server_name&#39;: &#39;string&#39;, &#39;resumed&#39;: &#39;bool&#39;, &#39;last_alert&#39;: &#39;string&#39;, &#39;next_protocol&#39;: &#39;string&#39;, &#39;established&#39;: &#39;bool&#39;, &#39;ssl_history&#39;: &#39;string&#39;, &#39;cert_chain_fps&#39;: &#39;vector[string]&#39;, &#39;client_cert_chain_fps&#39;: &#39;vector[string]&#39;, &#39;sni_matches_cert&#39;: &#39;bool&#39;, &#39;validation_status&#39;: &#39;string&#39;, &#39;ja3&#39;: &#39;string&#39;, &#39;ja3s&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;ssl_red&#39;): &#39;time&#39;, (&#39;version&#39;, &#39;ssl_red&#39;): &#39;string&#39;, &#39;cert_chain_fuids&#39;: &#39;vector[string]&#39;, &#39;client_cert_chain_fuids&#39;: &#39;vector[string]&#39;, &#39;issuer&#39;: &#39;string&#39;, &#39;client_subject&#39;: &#39;string&#39;, &#39;client_issuer&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;stats&#39;): &#39;time&#39;, &#39;mem&#39;: &#39;count&#39;, &#39;pkts_proc&#39;: &#39;count&#39;, &#39;bytes_recv&#39;: &#39;count&#39;, &#39;pkts_dropped&#39;: &#39;count&#39;, &#39;pkts_link&#39;: &#39;count&#39;, &#39;pkt_lag&#39;: &#39;interval&#39;, &#39;events_proc&#39;: &#39;count&#39;, &#39;events_queued&#39;: &#39;count&#39;, &#39;active_tcp_conns&#39;: &#39;count&#39;, &#39;active_udp_conns&#39;: &#39;count&#39;, &#39;active_icmp_conns&#39;: &#39;count&#39;, &#39;tcp_conns&#39;: &#39;count&#39;, &#39;udp_conns&#39;: &#39;count&#39;, &#39;icmp_conns&#39;: &#39;count&#39;, &#39;timers&#39;: &#39;count&#39;, &#39;active_timers&#39;: &#39;count&#39;, &#39;files&#39;: &#39;count&#39;, &#39;active_files&#39;: &#39;count&#39;, &#39;dns_requests&#39;: &#39;count&#39;, &#39;active_dns_requests&#39;: &#39;count&#39;, &#39;reassem_tcp_size&#39;: &#39;count&#39;, &#39;reassem_file_size&#39;: &#39;count&#39;, &#39;reassem_frag_size&#39;: &#39;count&#39;, &#39;reassem_unknown_size&#39;: &#39;count&#39;, (&#39;ts&#39;, &#39;syslog&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;syslog&#39;): &#39;enum&#39;, &#39;facility&#39;: &#39;string&#39;, &#39;severity&#39;: &#39;string&#39;, (&#39;ts&#39;, &#39;traceroute&#39;): &#39;time&#39;, (&#39;proto&#39;, &#39;traceroute&#39;): &#39;string&#39;, (&#39;ts&#39;, &#39;tunnel&#39;): &#39;time&#39;, &#39;tunnel_type&#39;: &#39;enum&#39;, (&#39;ts&#39;, &#39;weird&#39;): &#39;time&#39;, &#39;notice&#39;: &#39;bool&#39;, (&#39;ts&#39;, &#39;weird_red&#39;): &#39;time&#39;, (&#39;ts&#39;, &#39;x509&#39;): &#39;time&#39;, &#39;fingerprint&#39;: &#39;string&#39;, &#39;certificate.version&#39;: &#39;count&#39;, &#39;certificate.serial&#39;: &#39;string&#39;, &#39;certificate.subject&#39;: &#39;string&#39;, &#39;certificate.issuer&#39;: &#39;string&#39;, &#39;certificate.not_valid_before&#39;: &#39;time&#39;, &#39;certificate.not_valid_after&#39;: &#39;time&#39;, &#39;certificate.key_alg&#39;: &#39;string&#39;, &#39;certificate.sig_alg&#39;: &#39;string&#39;, &#39;certificate.key_type&#39;: &#39;string&#39;, &#39;certificate.key_length&#39;: &#39;count&#39;, &#39;certificate.exponent&#39;: &#39;string&#39;, &#39;certificate.curve&#39;: &#39;string&#39;, &#39;san.dns&#39;: &#39;vector[string]&#39;, &#39;san.uri&#39;: &#39;vector[string]&#39;, &#39;san.email&#39;: &#39;vector[string]&#39;, &#39;san.ip&#39;: &#39;vector[addr]&#39;, &#39;basic_constraints.ca&#39;: &#39;bool&#39;, &#39;basic_constraints.path_len&#39;: &#39;count&#39;, &#39;host_cert&#39;: &#39;bool&#39;, &#39;client_cert&#39;: &#39;bool&#39;, (&#39;ts&#39;, &#39;x509_red&#39;): &#39;time&#39;}
+
+
+
+skip_log_prefix = (&#39;LICENSE&#39;, &#39;README&#39;, &#39;.capture_loss.&#39;, &#39;.capture_loss_&#39;, &#39;.conn.&#39;, &#39;.conn_&#39;, &#39;.dns.&#39;, &#39;.dns_&#39;, &#39;.env_vars&#39;, &#39;.http.&#39;, &#39;.http_&#39;, &#39;.known_certs.&#39;, &#39;.known_certs_&#39;, &#39;.notice.&#39;, &#39;.notice_&#39;, &#39;.ntlm.&#39;, &#39;.ntlm_&#39;, &#39;.rotated.&#39;, &#39;.ssl.&#39;, &#39;.ssl_&#39;, &#39;.stats.&#39;, &#39;.stats_&#39;, &#39;.x509.&#39;, &#39;.x509_&#39;, &#39;.startup&#39;, &#39;.cmdline&#39;, &#39;.pid&#39;, &#39;conn-summary&#39;, &#39;stderr&#39;, &#39;stdout&#39;)           #Note, the following are actual zeek logs: capture_loss, files, loaded_scripts, notice, packet_filter, stats, weird
+skip_log_suffix = (&#39;.pcap&#39;, &#39;.tar.gz&#39;, &#39;.tar&#39;, &#39;.zip&#39;, &#39;.zng&#39;, &#39;.zng.gz&#39;)                               #.log.gz is TSV, .zson.gz is json, .ndjson.gz is NL-delimited json, and .zng is a zed special format
+
+#======== Functions
+def create_simulated_headers() -&gt; tuple[Dict, Dict, Dict]:
+        &#34;&#34;&#34;Create dictionaries with simulated header blocks, &#34;#fields&#34; lines, and &#34;#types&#34; lines for each file type.&#34;&#34;&#34;
+
+        local_header_lines = {}                                                                         #Keys are file_path, values are lists of header strings
+        local_field_name_lists = {}                                                                     #Keys are file_path, values are lists of field names
+        local_field_type_lists = {}                                                                     #Keys are file_path, values are lists of field types
+        #master_types = {}                                                                              #Keys are file_path, values are dictionaries of field-&gt;type.
+
+        for hb in raw_header_blocks:
+
+                h_list = hb.split(&#39;\n&#39;)
+
+                pared_h_list = []
+
+                file_path = &#39;&#39;
+                field_list = []
+                type_list = []
+                for one_line in h_list:
+                        if one_line.startswith(&#39;#path&#39;):
+                                file_path = one_line.split(&#39;\t&#39;)[1]
+                        elif one_line.startswith(&#39;#fields&#39;):
+                                field_list = one_line.split(&#39;\t&#39;)[1:]
+                        elif one_line.startswith(&#39;#types&#39;):
+                                type_list = one_line.split(&#39;\t&#39;)[1:]
+
+                        #if not one_line.startswith((&#39;#open&#39;, &#39;#close&#39;)):
+                        pared_h_list.append(one_line)
+
+                assert len(field_list) == len(type_list)
+
+                #if field_list and type_list:
+                #       if file_path not in master_types:
+                #               master_types[file_path] = {}
+                #       types_of = dict(zip(field_list, type_list))
+                #       for field_name, field_type in types_of.items():
+                #               master_types[file_path][field_name] = field_type
+                #else:
+                #       print(file_path + &#34; is missing one or both of field and type lines.&#34;)
+
+                if file_path:
+                        if file_path in local_header_lines:
+                                sys.stderr.write(file_path + &#34; being added twice in zcutter.py .\n&#34;)
+                                sys.stderr.flush()
+                        local_header_lines[file_path] = pared_h_list
+                        local_field_name_lists[file_path] = field_list
+                        local_field_type_lists[file_path] = type_list
+                else:
+                        sys.stderr.write(&#34;No #path line or missing #path value in zcutter.py .\n&#34;)
+                        sys.stderr.flush()
+
+        return (local_header_lines, local_field_name_lists, local_field_type_lists)
+
+
+def Debug(DebugStr: str) -&gt; None:
+        &#34;&#34;&#34;Prints a note to stderr.&#34;&#34;&#34;
+
+        if args[&#39;verbose&#39;]:
+                sys.stderr.write(DebugStr + &#39;\n&#39;)
+                sys.stderr.flush()
+
+
+def fail(fail_message: str) -&gt; None:
+        &#34;&#34;&#34;Print a failure notice and exit.&#34;&#34;&#34;
+
+        sys.stderr.write(str(fail_message) + &#39;, exiting.\n&#39;)
+        sys.stderr.flush()
+        sys.exit(1)
+
+
+def print_line(output_line: str, out_h: Union[TextIO, None]) -&gt; None:
+        &#34;&#34;&#34;Print or log the output line.  If out_h is set, use that as a handle to which to write the line, otherwise print to stdout.&#34;&#34;&#34;
+
+        try:
+                if out_h:
+                        out_h.write(output_line + &#39;\n&#39;)
+                else:
+                        print(output_line)
+        except (BrokenPipeError, KeyboardInterrupt):
+                sys.stderr.close()                                                                      #To avoid printing the BrokenPipeError warning
+                sys.exit(0)
+
+
+def mkdir_p(path: str) -&gt; None:
+        &#34;&#34;&#34;Create an entire directory branch.  Will not complain if the directory already exists.&#34;&#34;&#34;
+
+        if not os.path.isdir(path):
+                try:
+                        os.makedirs(path)
+                except OSError as exc:
+                        if exc.errno == errno.EEXIST and os.path.isdir(path):
+                                pass
+                        elif exc.errno == errno.EEXIST:
+                                sys.stderr.write(path + &#39; exists, so we cannot create it as a directory.  Exiting.\n&#39;)
+                                sys.stderr.flush()
+                                sys.exit(1)
+                        else:
+                                raise
+
+
+def open_bzip2_file_to_tmp_file(bzip2_filename: str) -&gt; str:
+        &#34;&#34;&#34;Open up a bzip2 file to a temporary file and return that filename.&#34;&#34;&#34;
+
+        tmp_fd, tmp_path = tempfile.mkstemp()
+        try:
+                with os.fdopen(tmp_fd, &#39;wb&#39;) as tmp_h, bz2.BZ2File(bzip2_filename, &#39;rb&#39;) as compressed_file:
+                        for data in iter(lambda: compressed_file.read(100 * 1024), b&#39;&#39;):
+                                tmp_h.write(data)
+                return tmp_path
+        except:
+                sys.stderr.write(&#34;While expanding bzip2 file, unable to write to &#34; + str(tmp_path) + &#39;, exiting.\n&#39;)
+                raise
+
+
+def open_gzip_file_to_tmp_file(gzip_filename: str) -&gt; str:
+        &#34;&#34;&#34;Open up a gzip file to a temporary file and return that filename.&#34;&#34;&#34;
+
+        tmp_fd, tmp_path = tempfile.mkstemp()
+        try:
+                with os.fdopen(tmp_fd, &#39;wb&#39;) as tmp_h, gzip.GzipFile(gzip_filename, &#39;rb&#39;) as compressed_file:
+                        for data in iter(lambda: compressed_file.read(100 * 1024), b&#39;&#39;):
+                                tmp_h.write(data)
+        except zlib.error:
+                sys.stderr.write(str(gzip_filename) + &#34; could not be decompressed with zlib, skipping.\n&#34;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+        except gzip.BadGzipFile:
+                sys.stderr.write(str(gzip_filename) + &#34; is not a gzip file, skipping.\n&#34;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+        except EOFError:
+                sys.stderr.write(str(gzip_filename) + &#34; appears to be truncated, skipping.\n&#34;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+        except:                                                                                         # pylint: disable=bare-except
+                sys.stderr.write(&#34;While expanding gzip file, unable to write to &#34; + str(tmp_path) + &#39;, skipping.\n&#39;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+                #raise
+
+        return tmp_path
+
+
+def data_line_of(field_name_list: List[str], field_value_list: List, input_type: str, cl_args: Dict, zeek_file_path:str) -&gt; str:
+        &#34;&#34;&#34;Provide a formatted output line from the raw data fields.&#34;&#34;&#34;
+
+        if not zeek_file_path:
+                Debug(&#39;Missing zeek_file_path in data_line_of&#39;)
+
+        output_line: str = &#39;&#39;
+        no_empty_out_dict: Dict = {}
+
+        if cl_args[&#39;tsv&#39;]:
+                output_line = cl_args[&#39;fieldseparator&#39;].join(field_value_list)
+        elif cl_args[&#39;json&#39;]:
+                out_dict = dict(zip(field_name_list, field_value_list))
+                if &#39;_path&#39; not in out_dict:
+                        out_dict[&#39;_path&#39;] = zeek_file_path
+                no_empty_out_dict = {k: v for k, v in out_dict.items() if v != &#39;&#39;}
+                output_line = json.dumps(no_empty_out_dict)
+        elif input_type == &#39;tsv&#39;:
+                output_line = cl_args[&#39;fieldseparator&#39;].join(field_value_list)
+        elif input_type == &#39;json&#39;:
+                out_dict = dict(zip(field_name_list, field_value_list))
+                if &#39;_path&#39; not in out_dict:
+                        out_dict[&#39;_path&#39;] = zeek_file_path
+                no_empty_out_dict = {k: v for k, v in out_dict.items() if v != &#39;&#39;}
+                output_line = json.dumps(no_empty_out_dict)
+
+        return output_line
+
+
+def print_sim_tsv_header(line_dict: Dict, requested_fields: List, cl_args: Dict, output_h: Union[TextIO, None]) -&gt; None:
+        &#34;&#34;&#34;Generate a simulated TSV header for the case where we input json and output in TSV.&#34;&#34;&#34;
+
+        if &#34;_path&#34; in line_dict:
+                file_path = line_dict[&#39;_path&#39;]
+                type_of = dict(zip(field_name_lists[file_path], field_type_lists[file_path]))
+                limited_types = []
+                for one_field in requested_fields:
+                        limited_types.append(type_of[one_field])
+                for one_line in header_lines[file_path]:
+                        if one_line.startswith(&#39;#fields&#39;):
+                                if cl_args[&#39;_min_hdr&#39;]:
+                                        print_line(cl_args[&#39;fieldseparator&#39;].join(requested_fields), output_h)
+                                else:
+                                        print_line(&#39;#fields&#39; + cl_args[&#39;fieldseparator&#39;] + cl_args[&#39;fieldseparator&#39;].join(requested_fields), output_h)
+                        elif not cl_args[&#39;_min_hdr&#39;]:
+                                if one_line.startswith(&#39;#types&#39;):
+                                        print_line(&#39;#types&#39; + cl_args[&#39;fieldseparator&#39;] + cl_args[&#39;fieldseparator&#39;].join(limited_types), output_h)
+                                #No  special handling needed for the &#34;#path&#34; line as the templates already have a correct #path line.
+                                else:
+                                        print_line(one_line, output_h)
+        else:
+                fail(&#34;_path missing from first json record.&#34;)
+
+        process_log_lines.tsv_headers_printed = True                                                    # type: ignore
+
+
+def correct_var_format(field_str_value: str, this_field_name: str, this_file_path: str, correct_field_types: Dict, cl_args: Dict) -&gt; Union[str, int, float, bool, list]:
+        &#34;&#34;&#34;Json requires numbers (ints and floats) and boolean values to be
+        presented as such, rather than values inside strings.  This function
+        takes a specific field and returns it as the correct python type so
+        it can be correctly formatted as json.&#34;&#34;&#34;
+
+        typed_field: Union[str, int, float, bool, list] = &#39;&#39;
+
+        #Check for both this_field_name and (this_field_name, this_file_path) as keys
+        mytype = correct_field_types.get(this_field_name, correct_field_types.get((this_field_name, this_file_path), &#39;&#39;))
+        if field_str_value == &#39;&#39;:
+                typed_field = &#39;&#39;
+        elif field_str_value == &#39;-&#39; and mytype in (&#39;port&#39;, &#39;count&#39;, &#39;int&#39;, &#39;time&#39;, &#39;interval&#39;, &#39;double&#39;):
+                typed_field = &#39;&#39;
+        elif field_str_value == &#39;(empty)&#39; and mytype.startswith((&#39;vector[&#39;, &#39;set[&#39;)):
+                typed_field = []
+        elif this_field_name == &#39;ts&#39; and cl_args[&#39;readabledate&#39;]:
+                typed_field = datetime.datetime.fromtimestamp(float(field_str_value)).strftime(cl_args[&#39;dateformat&#39;])
+        elif mytype in (&#39;port&#39;, &#39;count&#39;, &#39;int&#39;):
+                typed_field = int(field_str_value)
+        elif mytype in (&#39;time&#39;, &#39;interval&#39;, &#39;double&#39;):
+                typed_field = float(field_str_value)
+        elif mytype == &#39;bool&#39;:
+                if field_str_value in (&#39;t&#39;, &#39;T&#39;, &#39;true&#39;, True,):
+                        typed_field = True
+                elif field_str_value in (&#39;f&#39;, &#39;F&#39;, &#39;false&#39;, False,):
+                        typed_field = False
+                else:
+                        typed_field = bool(field_str_value)
+        elif mytype.startswith((&#39;vector[&#39;, &#39;set[&#39;)):
+                if len(field_str_value) &gt; 0:
+                        #This may need tweaking if the upcoming conversion to str (for TSV output) or json.dumps (for json output) don&#39;t correctly format the values inside the list.
+                        typed_field = field_str_value.split(&#39;,&#39;)
+                else:
+                        typed_field = &#39;&#39;
+        else:
+                typed_field = str(field_str_value)
+
+        return typed_field
+
+
+def process_log_lines(log_file: str, original_filename: str, requested_fields: List[str], cl_args: Dict) -&gt; None:
+        &#34;&#34;&#34;Will process all the lines in an uncompressed log file.&#34;&#34;&#34;
+
+        if &#39;data_line_seen&#39; not in process_log_lines.__dict__:
+                process_log_lines.data_line_seen = False                                                # type: ignore
+
+        if &#39;tsv_headers_printed&#39; not in process_log_lines.__dict__:
+                process_log_lines.tsv_headers_printed = False                                           # type: ignore
+
+        in_file_format: str = &#39;&#39;
+        field_line_fields: List = []
+        type_line_fields: List = []
+        field_types: Dict = {}                                                                          #Dictionary whose keys are ALL field names and whose values are the corresponding field types.  This has all the field names, even when we limit the output to only certain fields.
+
+        field_location: Dict[str, int] = {}                                                             #Remembers in which column we can find a given field name.
+
+        Debug(&#34;Processing: &#34; + log_file)
+        log_h: Union[TextIO, None] = None
+        with open(log_file, &#39;r&#39;, encoding=&#39;utf8&#39;) as log_h:
+                output_h: Union[TextIO, None] = None
+                if cl_args[&#39;outputdir&#39;] and original_filename not in (&#39;-&#39;, &#39;&#39;, None):                   #If original_filename is one of these it&#39;s from stdin, so we don&#39;t create a handle and the output continues to go to stdout.
+                        output_filename = os.path.join(cl_args[&#39;outputdir&#39;], original_filename.replace(&#39;.gz&#39;, &#39;&#39;).replace(&#39;.bz2&#39;, &#39;&#39;))  #We&#39;re writing out uncompressed no matter what the input format was.
+                        if output_filename:
+                                if os.path.exists(output_filename):                                     # pylint: disable=no-else-return
+                                        Debug(output_filename + &#34; exists, late skipping.&#34;)
+                                        log_h.close()
+                                        return
+                                else:
+                                        mkdir_p(os.path.dirname(os.path.join(cl_args[&#39;outputdir&#39;], original_filename)))
+                                        output_h = open(output_filename, &#34;a+&#34;, encoding=&#34;utf8&#34;)         # pylint: disable=consider-using-with
+
+                limited_fields: List = []
+                file_path = &#39;&#39;                                                                          #The zeek record type, like &#34;dns&#34;, &#34;http&#34;.  In TSV, found on #path line, in json, in key &#34;_path&#34;
+                for _, raw_line in enumerate(log_h):                                                    #_ is the line count
+                        raw_line = raw_line.rstrip()
+                        if not in_file_format:
+                                #FIXME - handle case where stdin gets both TSV and json input lines
+                                if raw_line == r&#39;#separator \x09&#39;:                                      #Use raw string so python won&#39;t turn \x09 into an actual tab
+                                        in_file_format = &#39;tsv&#39;
+                                #elif raw_line == &#39;&#39;:                                                   #conn-summary files start with a blank line, but we&#39;ve skipped these already.
+                                #       pass
+                                elif raw_line.startswith(&#39;{&#39;):
+                                        in_file_format = &#39;json&#39;
+                                        field_dict_1 = json.loads(raw_line)
+                                        if &#34;_path&#34; in field_dict_1:
+                                                file_path = field_dict_1[&#34;_path&#34;]
+                                                del field_dict_1[&#34;_path&#34;]
+                                        if &#34;_write_ts&#34; in field_dict_1:
+                                                del field_dict_1[&#34;_write_ts&#34;]
+                                        if requested_fields == []:
+                                                limited_fields = list(field_dict_1.keys())
+                                        elif cl_args[&#39;negate&#39;]:
+                                                for one_field in field_dict_1.keys():
+                                                        if one_field not in requested_fields:
+                                                                limited_fields.append(one_field)
+                                        else:
+                                                for one_field in requested_fields:
+                                                        if one_field in field_dict_1.keys():
+                                                                limited_fields.append(one_field)
+                                elif raw_line.startswith(&#39;#separator&#39;):
+                                        sys.stderr.write(&#39;Unrecognized separator in &#39; + log_file + &#39; , skipping.\n&#39;)
+                                        return
+                                else:
+                                        sys.stderr.write(&#39;Unrecognized starting line in &#39; + log_file + &#39; , skipping.\n&#39;)
+                                        return
+
+
+                        if (cl_args[&#39;allheaders&#39;] or cl_args[&#39;allminheaders&#39;] or (cl_args[&#39;_one_hdr&#39;] and process_log_lines.data_line_seen is False)) and (cl_args[&#39;tsv&#39;] and in_file_format == &#39;json&#39; and process_log_lines.tsv_headers_printed is False):     # type: ignore # pylint: disable=too-many-boolean-expressions
+                                #We&#39;re inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
+                                print_sim_tsv_header(json.loads(raw_line), limited_fields, cl_args, output_h)
+
+                        out_line = &#39;&#39;
+                        if raw_line.startswith(&#39;#&#39;):
+                                #Process header lines
+                                if raw_line.startswith(&#39;#fields&#39;):
+                                        #read fields into dictionary (fieldname-&gt;adjusted column number)
+                                        field_location = {}
+                                        field_line_fields = raw_line.split(&#39;\t&#39;)[1:]                    #List of the fields in the #fields line.  We have to use [1:] to skip over &#39;#fields&#39;
+                                        for field_num, one_field in enumerate(field_line_fields):
+                                                field_location[one_field] = field_num
+                                        limited_fields = []
+                                        if requested_fields == []:
+                                                limited_fields = field_line_fields.copy()
+                                        elif cl_args[&#39;negate&#39;]:
+                                                for one_field in field_location:
+                                                        if one_field not in requested_fields:
+                                                                limited_fields.append(one_field)
+                                        else:
+                                                for one_field in requested_fields:
+                                                        if one_field in field_location:
+                                                                limited_fields.append(one_field)
+                                        out_line = cl_args[&#39;fieldseparator&#39;].join(limited_fields)
+                                        if not cl_args[&#39;_min_hdr&#39;]:                                     #Prepend &#34;#fields&#34; unless we&#39;re doing minimal headers
+                                                out_line = &#39;#fields&#39; + cl_args[&#39;fieldseparator&#39;] + out_line
+
+                                elif raw_line.startswith(&#39;#types&#39;):
+                                        type_list = [&#39;#types&#39;, ]
+                                        type_line_fields = raw_line.split(&#39;\t&#39;)[1:]                     #List of the fields in the #types line.  We have to use [1:] to skip over &#39;#types&#39;
+                                        if requested_fields == []:
+                                                type_list = raw_line.split(&#39;\t&#39;)                        #Grab everything, including the leading &#34;#types&#34;
+                                        elif not field_location:
+                                                #Fail case where #types shows up before #fields
+                                                fail(&#39;field_location is not set when attempting to process #types line: is there a chance #types showed up before #fields?&#39;)
+                                        elif cl_args[&#39;negate&#39;]:
+                                                for line_index, one_type in enumerate(type_line_fields):
+                                                        if line_index not in field_location.values():
+                                                                type_list.append(one_type)
+                                        else:
+                                                for one_label in requested_fields:
+                                                        field_index = field_location.get(one_label)
+                                                        if field_index is not None:
+                                                                type_list.append(type_line_fields[field_index])
+                                        if not cl_args[&#39;_min_hdr&#39;]:
+                                                out_line = cl_args[&#39;fieldseparator&#39;].join(type_list)
+                                elif raw_line.startswith(&#39;#path&#39;):
+                                        file_path = raw_line.split(&#39;\t&#39;)[1]
+                                        if not cl_args[&#39;_min_hdr&#39;]:
+                                                out_line = raw_line
+                                else:
+                                        if not cl_args[&#39;_min_hdr&#39;]:
+                                                out_line = raw_line
+
+                                if field_line_fields and type_line_fields and not field_types:
+                                        #Build the field_types dictionary
+                                        field_types = dict(zip(field_line_fields, type_line_fields))
+
+                                if not (cl_args[&#39;allheaders&#39;] or cl_args[&#39;allminheaders&#39;] or (cl_args[&#39;_one_hdr&#39;] and process_log_lines.data_line_seen is False)):      # type: ignore
+                                        out_line = &#39;&#39;
+                                if cl_args[&#39;json&#39;]:
+                                        out_line = &#39;&#39;
+                        else:
+                                process_log_lines.data_line_seen = True                                 # type: ignore
+                                #Process non-header lines
+                                if in_file_format == &#39;tsv&#39;:
+                                        if not field_location:
+                                                fail(&#34;Warning, field_location is not set as we enter live data lines&#34;)
+                                        #process tsv line
+                                        data_fields = raw_line.split(&#39;\t&#39;)
+                                        out_fields = []
+                                        #FIXME - handle case where no fields were requested.
+                                        for one_field in limited_fields:
+                                                try:
+                                                        field_in_string_format = data_fields[field_location[one_field]]
+                                                except IndexError:
+                                                        field_in_string_format = &#39;&#39;
+
+                                                #We _should_ have already built a field_types dictionary from the header fields.  If not, we fall back on the static one at the top of this program.
+                                                if cl_args[&#39;json&#39;]:
+                                                        out_fields.append(correct_var_format(field_in_string_format, one_field, file_path, field_types or static_field_types, cl_args))
+                                                else:
+                                                        if one_field == &#39;ts&#39; and cl_args[&#39;readabledate&#39;]:
+                                                                out_fields.append(datetime.datetime.fromtimestamp(float(field_in_string_format)).strftime(cl_args[&#39;dateformat&#39;]))
+                                                        else:
+                                                                out_fields.append(field_in_string_format)
+                                        out_line = data_line_of(limited_fields, out_fields, in_file_format, cl_args, file_path)
+                                elif in_file_format == &#39;json&#39;:
+                                        #Process json line
+                                        try:
+                                                field_dict_3 = json.loads(raw_line)
+                                                out_fields = []
+                                                for one_field in limited_fields:
+                                                        if requested_fields == [] or (one_field in field_dict_3) or (cl_args[&#39;negate&#39;] and one_field not in field_dict_3):
+                                                                #We _should_ have already built a field_types dictionary from the header fields.  If not, we fall back on the static one at the top of this program.
+                                                                if cl_args[&#39;tsv&#39;]:
+                                                                        if one_field == &#39;ts&#39; and cl_args[&#39;readabledate&#39;]:
+                                                                                out_fields.append(datetime.datetime.fromtimestamp(float(field_dict_3.get(one_field, 0.0))).strftime(cl_args[&#39;dateformat&#39;]))
+                                                                        else:
+                                                                                out_fields.append(str(field_dict_3.get(one_field, &#39;&#39;)))
+                                                                else:
+                                                                        out_fields.append(correct_var_format(str(field_dict_3.get(one_field, &#39;&#39;)), one_field, file_path, field_types or static_field_types, cl_args))
+                                                        else:
+                                                                out_fields.append(&#39;&#39;)
+
+                                                out_line = data_line_of(limited_fields, out_fields, in_file_format, cl_args, file_path)
+                                        except json.decoder.JSONDecodeError:
+                                                out_line = &#39;&#39;
+                                else:
+                                        fail(&#39;Unrecognized file format: &#39; + in_file_format)
+
+                        if out_line:
+                                print_line(out_line, output_h)
+
+                if output_h:
+                        output_h.close()
+                        relative_touch(original_filename, os.path.join(cl_args[&#39;outputdir&#39;], original_filename.replace(&#39;.gz&#39;, &#39;&#39;).replace(&#39;.bz2&#39;, &#39;&#39;)))
+
+        sys.stderr.flush()
+
+
+def relative_touch(old_file: str, new_file_to_change: str) -&gt; None:
+        &#34;&#34;&#34;Make the modification time and atime of new_file_to_change to be equal to those of old_file.&#34;&#34;&#34;
+
+        os.utime(new_file_to_change, ns=(os.stat(old_file).st_atime_ns, os.stat(old_file).st_mtime_ns))
+
+
+def link_or_copy(source_dirname: str, source_basename: str, destdir: str, dest_relative_file: str) -&gt; None:
+        &#34;&#34;&#34;Create a hardlink from source to destdir (which may not yet exist.)&#34;&#34;&#34;
+
+        complete_source = os.path.join(source_dirname, source_basename)
+
+        if not os.path.isdir(destdir):
+                try:
+                        mkdir_p(destdir)
+                except:                                                                                 # pylint: disable=bare-except
+                        Debug(&#34;Unable to create &#34; + destdir + &#34; , skipping &#34; + complete_source)
+                        return
+
+
+        if os.path.isdir(destdir) and os.access(destdir, os.W_OK):
+                complete_dest = os.path.join(destdir, dest_relative_file)
+                if os.path.exists(complete_dest):
+                        Debug(&#39;Skipping copy of &#39; + complete_source + &#39; as it already exists in &#39; + destdir)
+                else:
+                        try:
+                                os.link(complete_source, complete_dest, follow_symlinks=False)                  #Don&#39;t follow symlinks as these may point to sensitive files outside the log tree.
+                                #No need to adjust timestamp as hardlinks share the underlying timestamps
+                        except OSError:
+                                #Debug(&#39;Unable to hardlink, so we will do a file copy instead&#39;)
+                                try:
+                                        shutil.copy2(complete_source, complete_dest, follow_symlinks=False)     #Copy the file, preserving metadata if possible
+                                        relative_touch(complete_source, complete_dest)
+                                except:                                                                         # pylint: disable=bare-except
+                                        Debug(&#39;Unable to link or copy &#39; + complete_source + &#39; to &#39; + destdir + &#39; , skipping.&#39;)
+
+
+def process_log(log_source: str, fields: list[str], cl_args: Dict) -&gt; None:
+        &#34;&#34;&#34;Process a single source file or stdin.&#34;&#34;&#34;
+
+        source_file = &#39;&#39;
+        close_temp = False
+        delete_temp = False
+
+        try:
+                full_source_path, source_basename = os.path.split(log_source)
+        except:                                                                                         # pylint: disable=bare-except
+                full_source_path = &#39;&#39;
+                source_basename = &#39;&#39;
+
+        if log_source not in (&#39;-&#39;, &#39;&#39;, None) and cl_args[&#39;outputdir&#39;]:
+                output_filename = os.path.join(cl_args[&#39;outputdir&#39;], log_source.replace(&#39;.gz&#39;, &#39;&#39;).replace(&#39;.bz2&#39;, &#39;&#39;)) #We&#39;re writing out uncompressed no matter what the input format was.
+                if output_filename and os.path.exists(output_filename):
+                        Debug(output_filename + &#34; exists, skipping.&#34;)
+                        return
+
+        #Read from stdin
+        if log_source in (&#39;-&#39;, &#39;&#39;, None):
+                Debug(&#39;Reading log lines from stdin.&#39;)
+                tmp_log = tempfile.NamedTemporaryFile(delete=True)                                      # pylint: disable=consider-using-with
+                tmp_log.write(sys.stdin.buffer.read())
+                tmp_log.flush()
+                source_file = tmp_log.name
+                close_temp = True
+        elif not os.path.exists(log_source):
+                Debug(&#39;Skipping nonexistent file &#39; + log_source)
+        #Set up source packet file; next 2 sections check for and handle compressed file extensions first, then final &#34;else&#34; treats the source as an uncompressed log file
+        elif source_basename.startswith(skip_log_prefix) or source_basename.endswith(skip_log_suffix):  #Log files that are not TSV/json formatted log files
+                Debug(&#34;Linking or copying non-TSV/json file &#34; + log_source)
+                if cl_args[&#39;outputdir&#39;]:
+                        #Make a hardlink to the file if possible (or copy if not) in the output directory
+                        link_or_copy(full_source_path, source_basename, os.path.realpath(cl_args[&#39;outputdir&#39;]), log_source)
+                else:
+                        #We&#39;re sending content to stdout - do not process the file at all to match zeek-cut.
+                        pass
+                return
+        elif log_source.endswith(&#39;.bz2&#39;):
+                Debug(&#39;Reading bzip2 compressed logs from file &#39; + log_source)
+                source_file = open_bzip2_file_to_tmp_file(log_source)
+                delete_temp = True
+        elif log_source.endswith(&#39;.gz&#39;):
+                Debug(&#39;Reading gzip compressed logs from file &#39; + log_source)
+                source_file = open_gzip_file_to_tmp_file(log_source)
+                delete_temp = True
+        else:
+                Debug(&#39;Reading logs from file &#39; + log_source)
+                source_file = log_source
+
+        #Try to process file first
+        if source_file:
+                if os.path.exists(source_file) and os.access(source_file, os.R_OK):
+                        try:
+                                process_log_lines(source_file, log_source, fields, cl_args)
+                        except (FileNotFoundError, IOError):
+                                sys.stderr.write(&#34;Unable to open file &#34; + str(log_source) + &#39;, exiting.\n&#39;)
+                                raise
+                else:
+                        sys.stderr.write(&#34;Unable to open file &#34; + str(source_file) + &#39;, skipping.\n&#39;)
+
+        if close_temp:
+                tmp_log.close()
+
+        if delete_temp and source_file != log_source and os.path.exists(source_file):
+                os.remove(source_file)
+
+
+if __name__ == &#34;__main__&#34;:
+        import argparse
+
+        parser = argparse.ArgumentParser(description=&#39;zcutter.py version &#39; + str(__version__) + &#39;: returns fields from zeek log files.&#39;)
+        parser.add_argument(&#39;fields&#39;, help=&#39;fields to display&#39;, default=[], nargs=&#39;*&#39;)
+        parser.add_argument(&#39;-n&#39;, &#39;--negate&#39;, help=&#39;Negate test; show all columns EXCEPT those specified.&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-c&#39;, &#39;--firstheaders&#39;, help=&#39;Include first format header blocks in the output.&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-C&#39;, &#39;--allheaders&#39;, help=&#39;Include all format header blocks in the output.&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-m&#39;, &#39;--firstminheaders&#39;, help=&#39;Include first format header blocks in the output in minimal view.&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-M&#39;, &#39;--allminheaders&#39;, help=&#39;Include all format header blocks in the output in minimal view.&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-F&#39;, &#39;--fieldseparator&#39;, help=&#39;character that separates output fields.&#39;, required=False, default=&#39;\t&#39;)
+        parser.add_argument(&#39;-d&#39;, &#39;--readabledate&#39;, help=&#39;Convert ts to readable format.&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-D&#39;, &#39;--dateformat&#39;, help=&#39;Format to use for date output.&#39;, required=False, default=&#39;%FT%T+0000&#39;)          #Should be using %z , but it comes up empty.  need to force +0000  https://docs.python.org/3/library/datetime.html
+        parser.add_argument(&#39;-t&#39;, &#39;--tsv&#39;, help=&#39;Force TSV output&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-j&#39;, &#39;--json&#39;, help=&#39;Force json output&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-v&#39;, &#39;--verbose&#39;, help=&#39;Be verbose&#39;, required=False, default=False, action=&#39;store_true&#39;)
+        parser.add_argument(&#39;-o&#39;, &#39;--outputdir&#39;, help=&#39;Directory in which to place corresponding (uncompressed) output files&#39;, required=False, default=&#39;&#39;)
+        parser.add_argument(&#39;-r&#39;, &#39;--read&#39;, help=&#39;Log file(s) from which to read logs (place this option last)&#39;, required=False, default=[], nargs=&#39;*&#39;)
+        #May need to manually transfer params misplaced as files into the fields array.  Perhaps by extension?
+        args = vars(parser.parse_args())
+
+        if args[&#39;tsv&#39;] and args[&#39;json&#39;]:
+                fail(&#34;Cannot force both tsv and json output at the same time.&#34;)
+
+        if (int(args[&#39;firstheaders&#39;]) + int(args[&#39;allheaders&#39;]) + int(args[&#39;firstminheaders&#39;]) + int(args[&#39;allminheaders&#39;])) &gt; 1:
+                fail(&#39;Please pick just one header format type&#39;)
+
+        if args[&#39;outputdir&#39;] and (not os.path.isdir(args[&#39;outputdir&#39;])):
+                fail(str(args[&#39;outputdir&#39;]) + &#34; is not a directory&#34;)
+        if args[&#39;outputdir&#39;] and (not os.access(args[&#39;outputdir&#39;], os.W_OK)):
+                fail(str(args[&#39;outputdir&#39;]) + &#34; is not writeable&#34;)
+
+        if args[&#39;dateformat&#39;] != &#39;%FT%T+0000&#39;:
+                args[&#39;readabledate&#39;] = True
+
+        args[&#39;_hdr&#39;] = args[&#39;allheaders&#39;] or args[&#39;allminheaders&#39;] or args[&#39;firstheaders&#39;] or args[&#39;firstminheaders&#39;]
+        args[&#39;_min_hdr&#39;] = args[&#39;allminheaders&#39;] or args[&#39;firstminheaders&#39;]
+        args[&#39;_one_hdr&#39;] = args[&#39;firstheaders&#39;] or args[&#39;firstminheaders&#39;]
+
+        if args[&#39;tsv&#39;] and args[&#39;_hdr&#39;]:                                                                #We only need the simulated header blocks if the output is forced to TSV and the user wants headers
+                header_lines, field_name_lists, field_type_lists = create_simulated_headers()
+        else:
+                header_lines = {}
+                field_name_lists = {}
+                field_type_lists = {}
+
+        requested_field_list: list = args[&#39;fields&#39;]
+        Debug(&#39;Requesting these columns: &#39; + str(requested_field_list))
+
+        if not args[&#39;read&#39;]:                                                                            #If no files specified, force reading from stdin
+                args[&#39;read&#39;].append(&#39;&#39;)
+
+        for one_file in args[&#39;read&#39;]:
+                process_log(one_file, requested_field_list, args)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="zcutter.Debug"><code class="name flex">
+<span>def <span class="ident">Debug</span></span>(<span>DebugStr: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Prints a note to stderr.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Debug(DebugStr: str) -&gt; None:
+        &#34;&#34;&#34;Prints a note to stderr.&#34;&#34;&#34;
+
+        if args[&#39;verbose&#39;]:
+                sys.stderr.write(DebugStr + &#39;\n&#39;)
+                sys.stderr.flush()</code></pre>
+</details>
+</dd>
+<dt id="zcutter.correct_var_format"><code class="name flex">
+<span>def <span class="ident">correct_var_format</span></span>(<span>field_str_value: str, this_field_name: str, this_file_path: str, correct_field_types: Dict, cl_args: Dict) ‑> Union[str, int, float, bool, list]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Json requires numbers (ints and floats) and boolean values to be
+presented as such, rather than values inside strings.
+This function
+takes a specific field and returns it as the correct python type so
+it can be correctly formatted as json.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def correct_var_format(field_str_value: str, this_field_name: str, this_file_path: str, correct_field_types: Dict, cl_args: Dict) -&gt; Union[str, int, float, bool, list]:
+        &#34;&#34;&#34;Json requires numbers (ints and floats) and boolean values to be
+        presented as such, rather than values inside strings.  This function
+        takes a specific field and returns it as the correct python type so
+        it can be correctly formatted as json.&#34;&#34;&#34;
+
+        typed_field: Union[str, int, float, bool, list] = &#39;&#39;
+
+        #Check for both this_field_name and (this_field_name, this_file_path) as keys
+        mytype = correct_field_types.get(this_field_name, correct_field_types.get((this_field_name, this_file_path), &#39;&#39;))
+        if field_str_value == &#39;&#39;:
+                typed_field = &#39;&#39;
+        elif field_str_value == &#39;-&#39; and mytype in (&#39;port&#39;, &#39;count&#39;, &#39;int&#39;, &#39;time&#39;, &#39;interval&#39;, &#39;double&#39;):
+                typed_field = &#39;&#39;
+        elif field_str_value == &#39;(empty)&#39; and mytype.startswith((&#39;vector[&#39;, &#39;set[&#39;)):
+                typed_field = []
+        elif this_field_name == &#39;ts&#39; and cl_args[&#39;readabledate&#39;]:
+                typed_field = datetime.datetime.fromtimestamp(float(field_str_value)).strftime(cl_args[&#39;dateformat&#39;])
+        elif mytype in (&#39;port&#39;, &#39;count&#39;, &#39;int&#39;):
+                typed_field = int(field_str_value)
+        elif mytype in (&#39;time&#39;, &#39;interval&#39;, &#39;double&#39;):
+                typed_field = float(field_str_value)
+        elif mytype == &#39;bool&#39;:
+                if field_str_value in (&#39;t&#39;, &#39;T&#39;, &#39;true&#39;, True,):
+                        typed_field = True
+                elif field_str_value in (&#39;f&#39;, &#39;F&#39;, &#39;false&#39;, False,):
+                        typed_field = False
+                else:
+                        typed_field = bool(field_str_value)
+        elif mytype.startswith((&#39;vector[&#39;, &#39;set[&#39;)):
+                if len(field_str_value) &gt; 0:
+                        #This may need tweaking if the upcoming conversion to str (for TSV output) or json.dumps (for json output) don&#39;t correctly format the values inside the list.
+                        typed_field = field_str_value.split(&#39;,&#39;)
+                else:
+                        typed_field = &#39;&#39;
+        else:
+                typed_field = str(field_str_value)
+
+        return typed_field</code></pre>
+</details>
+</dd>
+<dt id="zcutter.create_simulated_headers"><code class="name flex">
+<span>def <span class="ident">create_simulated_headers</span></span>(<span>) ‑> tuple[typing.Dict, typing.Dict, typing.Dict]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create dictionaries with simulated header blocks, "#fields" lines, and "#types" lines for each file type.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_simulated_headers() -&gt; tuple[Dict, Dict, Dict]:
+        &#34;&#34;&#34;Create dictionaries with simulated header blocks, &#34;#fields&#34; lines, and &#34;#types&#34; lines for each file type.&#34;&#34;&#34;
+
+        local_header_lines = {}                                                                         #Keys are file_path, values are lists of header strings
+        local_field_name_lists = {}                                                                     #Keys are file_path, values are lists of field names
+        local_field_type_lists = {}                                                                     #Keys are file_path, values are lists of field types
+        #master_types = {}                                                                              #Keys are file_path, values are dictionaries of field-&gt;type.
+
+        for hb in raw_header_blocks:
+
+                h_list = hb.split(&#39;\n&#39;)
+
+                pared_h_list = []
+
+                file_path = &#39;&#39;
+                field_list = []
+                type_list = []
+                for one_line in h_list:
+                        if one_line.startswith(&#39;#path&#39;):
+                                file_path = one_line.split(&#39;\t&#39;)[1]
+                        elif one_line.startswith(&#39;#fields&#39;):
+                                field_list = one_line.split(&#39;\t&#39;)[1:]
+                        elif one_line.startswith(&#39;#types&#39;):
+                                type_list = one_line.split(&#39;\t&#39;)[1:]
+
+                        #if not one_line.startswith((&#39;#open&#39;, &#39;#close&#39;)):
+                        pared_h_list.append(one_line)
+
+                assert len(field_list) == len(type_list)
+
+                #if field_list and type_list:
+                #       if file_path not in master_types:
+                #               master_types[file_path] = {}
+                #       types_of = dict(zip(field_list, type_list))
+                #       for field_name, field_type in types_of.items():
+                #               master_types[file_path][field_name] = field_type
+                #else:
+                #       print(file_path + &#34; is missing one or both of field and type lines.&#34;)
+
+                if file_path:
+                        if file_path in local_header_lines:
+                                sys.stderr.write(file_path + &#34; being added twice in zcutter.py .\n&#34;)
+                                sys.stderr.flush()
+                        local_header_lines[file_path] = pared_h_list
+                        local_field_name_lists[file_path] = field_list
+                        local_field_type_lists[file_path] = type_list
+                else:
+                        sys.stderr.write(&#34;No #path line or missing #path value in zcutter.py .\n&#34;)
+                        sys.stderr.flush()
+
+        return (local_header_lines, local_field_name_lists, local_field_type_lists)</code></pre>
+</details>
+</dd>
+<dt id="zcutter.data_line_of"><code class="name flex">
+<span>def <span class="ident">data_line_of</span></span>(<span>field_name_list: List[str], field_value_list: List, input_type: str, cl_args: Dict, zeek_file_path: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Provide a formatted output line from the raw data fields.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def data_line_of(field_name_list: List[str], field_value_list: List, input_type: str, cl_args: Dict, zeek_file_path:str) -&gt; str:
+        &#34;&#34;&#34;Provide a formatted output line from the raw data fields.&#34;&#34;&#34;
+
+        if not zeek_file_path:
+                Debug(&#39;Missing zeek_file_path in data_line_of&#39;)
+
+        output_line: str = &#39;&#39;
+        no_empty_out_dict: Dict = {}
+
+        if cl_args[&#39;tsv&#39;]:
+                output_line = cl_args[&#39;fieldseparator&#39;].join(field_value_list)
+        elif cl_args[&#39;json&#39;]:
+                out_dict = dict(zip(field_name_list, field_value_list))
+                if &#39;_path&#39; not in out_dict:
+                        out_dict[&#39;_path&#39;] = zeek_file_path
+                no_empty_out_dict = {k: v for k, v in out_dict.items() if v != &#39;&#39;}
+                output_line = json.dumps(no_empty_out_dict)
+        elif input_type == &#39;tsv&#39;:
+                output_line = cl_args[&#39;fieldseparator&#39;].join(field_value_list)
+        elif input_type == &#39;json&#39;:
+                out_dict = dict(zip(field_name_list, field_value_list))
+                if &#39;_path&#39; not in out_dict:
+                        out_dict[&#39;_path&#39;] = zeek_file_path
+                no_empty_out_dict = {k: v for k, v in out_dict.items() if v != &#39;&#39;}
+                output_line = json.dumps(no_empty_out_dict)
+
+        return output_line</code></pre>
+</details>
+</dd>
+<dt id="zcutter.fail"><code class="name flex">
+<span>def <span class="ident">fail</span></span>(<span>fail_message: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Print a failure notice and exit.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fail(fail_message: str) -&gt; None:
+        &#34;&#34;&#34;Print a failure notice and exit.&#34;&#34;&#34;
+
+        sys.stderr.write(str(fail_message) + &#39;, exiting.\n&#39;)
+        sys.stderr.flush()
+        sys.exit(1)</code></pre>
+</details>
+</dd>
+<dt id="zcutter.link_or_copy"><code class="name flex">
+<span>def <span class="ident">link_or_copy</span></span>(<span>source_dirname: str, source_basename: str, destdir: str, dest_relative_file: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a hardlink from source to destdir (which may not yet exist.)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def link_or_copy(source_dirname: str, source_basename: str, destdir: str, dest_relative_file: str) -&gt; None:
+        &#34;&#34;&#34;Create a hardlink from source to destdir (which may not yet exist.)&#34;&#34;&#34;
+
+        complete_source = os.path.join(source_dirname, source_basename)
+
+        if not os.path.isdir(destdir):
+                try:
+                        mkdir_p(destdir)
+                except:                                                                                 # pylint: disable=bare-except
+                        Debug(&#34;Unable to create &#34; + destdir + &#34; , skipping &#34; + complete_source)
+                        return
+
+
+        if os.path.isdir(destdir) and os.access(destdir, os.W_OK):
+                complete_dest = os.path.join(destdir, dest_relative_file)
+                if os.path.exists(complete_dest):
+                        Debug(&#39;Skipping copy of &#39; + complete_source + &#39; as it already exists in &#39; + destdir)
+                else:
+                        try:
+                                os.link(complete_source, complete_dest, follow_symlinks=False)                  #Don&#39;t follow symlinks as these may point to sensitive files outside the log tree.
+                                #No need to adjust timestamp as hardlinks share the underlying timestamps
+                        except OSError:
+                                #Debug(&#39;Unable to hardlink, so we will do a file copy instead&#39;)
+                                try:
+                                        shutil.copy2(complete_source, complete_dest, follow_symlinks=False)     #Copy the file, preserving metadata if possible
+                                        relative_touch(complete_source, complete_dest)
+                                except:                                                                         # pylint: disable=bare-except
+                                        Debug(&#39;Unable to link or copy &#39; + complete_source + &#39; to &#39; + destdir + &#39; , skipping.&#39;)</code></pre>
+</details>
+</dd>
+<dt id="zcutter.mkdir_p"><code class="name flex">
+<span>def <span class="ident">mkdir_p</span></span>(<span>path: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create an entire directory branch.
+Will not complain if the directory already exists.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mkdir_p(path: str) -&gt; None:
+        &#34;&#34;&#34;Create an entire directory branch.  Will not complain if the directory already exists.&#34;&#34;&#34;
+
+        if not os.path.isdir(path):
+                try:
+                        os.makedirs(path)
+                except OSError as exc:
+                        if exc.errno == errno.EEXIST and os.path.isdir(path):
+                                pass
+                        elif exc.errno == errno.EEXIST:
+                                sys.stderr.write(path + &#39; exists, so we cannot create it as a directory.  Exiting.\n&#39;)
+                                sys.stderr.flush()
+                                sys.exit(1)
+                        else:
+                                raise</code></pre>
+</details>
+</dd>
+<dt id="zcutter.open_bzip2_file_to_tmp_file"><code class="name flex">
+<span>def <span class="ident">open_bzip2_file_to_tmp_file</span></span>(<span>bzip2_filename: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Open up a bzip2 file to a temporary file and return that filename.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def open_bzip2_file_to_tmp_file(bzip2_filename: str) -&gt; str:
+        &#34;&#34;&#34;Open up a bzip2 file to a temporary file and return that filename.&#34;&#34;&#34;
+
+        tmp_fd, tmp_path = tempfile.mkstemp()
+        try:
+                with os.fdopen(tmp_fd, &#39;wb&#39;) as tmp_h, bz2.BZ2File(bzip2_filename, &#39;rb&#39;) as compressed_file:
+                        for data in iter(lambda: compressed_file.read(100 * 1024), b&#39;&#39;):
+                                tmp_h.write(data)
+                return tmp_path
+        except:
+                sys.stderr.write(&#34;While expanding bzip2 file, unable to write to &#34; + str(tmp_path) + &#39;, exiting.\n&#39;)
+                raise</code></pre>
+</details>
+</dd>
+<dt id="zcutter.open_gzip_file_to_tmp_file"><code class="name flex">
+<span>def <span class="ident">open_gzip_file_to_tmp_file</span></span>(<span>gzip_filename: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Open up a gzip file to a temporary file and return that filename.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def open_gzip_file_to_tmp_file(gzip_filename: str) -&gt; str:
+        &#34;&#34;&#34;Open up a gzip file to a temporary file and return that filename.&#34;&#34;&#34;
+
+        tmp_fd, tmp_path = tempfile.mkstemp()
+        try:
+                with os.fdopen(tmp_fd, &#39;wb&#39;) as tmp_h, gzip.GzipFile(gzip_filename, &#39;rb&#39;) as compressed_file:
+                        for data in iter(lambda: compressed_file.read(100 * 1024), b&#39;&#39;):
+                                tmp_h.write(data)
+        except zlib.error:
+                sys.stderr.write(str(gzip_filename) + &#34; could not be decompressed with zlib, skipping.\n&#34;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+        except gzip.BadGzipFile:
+                sys.stderr.write(str(gzip_filename) + &#34; is not a gzip file, skipping.\n&#34;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+        except EOFError:
+                sys.stderr.write(str(gzip_filename) + &#34; appears to be truncated, skipping.\n&#34;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+        except:                                                                                         # pylint: disable=bare-except
+                sys.stderr.write(&#34;While expanding gzip file, unable to write to &#34; + str(tmp_path) + &#39;, skipping.\n&#39;)
+                if os.path.exists(tmp_path):
+                        os.remove(tmp_path)
+                tmp_path = &#39;&#39;
+                #raise
+
+        return tmp_path</code></pre>
+</details>
+</dd>
+<dt id="zcutter.print_line"><code class="name flex">
+<span>def <span class="ident">print_line</span></span>(<span>output_line: str, out_h: Optional[<class 'TextIO'>]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Print or log the output line.
+If out_h is set, use that as a handle to which to write the line, otherwise print to stdout.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print_line(output_line: str, out_h: Union[TextIO, None]) -&gt; None:
+        &#34;&#34;&#34;Print or log the output line.  If out_h is set, use that as a handle to which to write the line, otherwise print to stdout.&#34;&#34;&#34;
+
+        try:
+                if out_h:
+                        out_h.write(output_line + &#39;\n&#39;)
+                else:
+                        print(output_line)
+        except (BrokenPipeError, KeyboardInterrupt):
+                sys.stderr.close()                                                                      #To avoid printing the BrokenPipeError warning
+                sys.exit(0)</code></pre>
+</details>
+</dd>
+<dt id="zcutter.print_sim_tsv_header"><code class="name flex">
+<span>def <span class="ident">print_sim_tsv_header</span></span>(<span>line_dict: Dict, requested_fields: List, cl_args: Dict, output_h: Optional[<class 'TextIO'>]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate a simulated TSV header for the case where we input json and output in TSV.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print_sim_tsv_header(line_dict: Dict, requested_fields: List, cl_args: Dict, output_h: Union[TextIO, None]) -&gt; None:
+        &#34;&#34;&#34;Generate a simulated TSV header for the case where we input json and output in TSV.&#34;&#34;&#34;
+
+        if &#34;_path&#34; in line_dict:
+                file_path = line_dict[&#39;_path&#39;]
+                type_of = dict(zip(field_name_lists[file_path], field_type_lists[file_path]))
+                limited_types = []
+                for one_field in requested_fields:
+                        limited_types.append(type_of[one_field])
+                for one_line in header_lines[file_path]:
+                        if one_line.startswith(&#39;#fields&#39;):
+                                if cl_args[&#39;_min_hdr&#39;]:
+                                        print_line(cl_args[&#39;fieldseparator&#39;].join(requested_fields), output_h)
+                                else:
+                                        print_line(&#39;#fields&#39; + cl_args[&#39;fieldseparator&#39;] + cl_args[&#39;fieldseparator&#39;].join(requested_fields), output_h)
+                        elif not cl_args[&#39;_min_hdr&#39;]:
+                                if one_line.startswith(&#39;#types&#39;):
+                                        print_line(&#39;#types&#39; + cl_args[&#39;fieldseparator&#39;] + cl_args[&#39;fieldseparator&#39;].join(limited_types), output_h)
+                                #No  special handling needed for the &#34;#path&#34; line as the templates already have a correct #path line.
+                                else:
+                                        print_line(one_line, output_h)
+        else:
+                fail(&#34;_path missing from first json record.&#34;)
+
+        process_log_lines.tsv_headers_printed = True                                                    # type: ignore</code></pre>
+</details>
+</dd>
+<dt id="zcutter.process_log"><code class="name flex">
+<span>def <span class="ident">process_log</span></span>(<span>log_source: str, fields: list[str], cl_args: Dict) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Process a single source file or stdin.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def process_log(log_source: str, fields: list[str], cl_args: Dict) -&gt; None:
+        &#34;&#34;&#34;Process a single source file or stdin.&#34;&#34;&#34;
+
+        source_file = &#39;&#39;
+        close_temp = False
+        delete_temp = False
+
+        try:
+                full_source_path, source_basename = os.path.split(log_source)
+        except:                                                                                         # pylint: disable=bare-except
+                full_source_path = &#39;&#39;
+                source_basename = &#39;&#39;
+
+        if log_source not in (&#39;-&#39;, &#39;&#39;, None) and cl_args[&#39;outputdir&#39;]:
+                output_filename = os.path.join(cl_args[&#39;outputdir&#39;], log_source.replace(&#39;.gz&#39;, &#39;&#39;).replace(&#39;.bz2&#39;, &#39;&#39;)) #We&#39;re writing out uncompressed no matter what the input format was.
+                if output_filename and os.path.exists(output_filename):
+                        Debug(output_filename + &#34; exists, skipping.&#34;)
+                        return
+
+        #Read from stdin
+        if log_source in (&#39;-&#39;, &#39;&#39;, None):
+                Debug(&#39;Reading log lines from stdin.&#39;)
+                tmp_log = tempfile.NamedTemporaryFile(delete=True)                                      # pylint: disable=consider-using-with
+                tmp_log.write(sys.stdin.buffer.read())
+                tmp_log.flush()
+                source_file = tmp_log.name
+                close_temp = True
+        elif not os.path.exists(log_source):
+                Debug(&#39;Skipping nonexistent file &#39; + log_source)
+        #Set up source packet file; next 2 sections check for and handle compressed file extensions first, then final &#34;else&#34; treats the source as an uncompressed log file
+        elif source_basename.startswith(skip_log_prefix) or source_basename.endswith(skip_log_suffix):  #Log files that are not TSV/json formatted log files
+                Debug(&#34;Linking or copying non-TSV/json file &#34; + log_source)
+                if cl_args[&#39;outputdir&#39;]:
+                        #Make a hardlink to the file if possible (or copy if not) in the output directory
+                        link_or_copy(full_source_path, source_basename, os.path.realpath(cl_args[&#39;outputdir&#39;]), log_source)
+                else:
+                        #We&#39;re sending content to stdout - do not process the file at all to match zeek-cut.
+                        pass
+                return
+        elif log_source.endswith(&#39;.bz2&#39;):
+                Debug(&#39;Reading bzip2 compressed logs from file &#39; + log_source)
+                source_file = open_bzip2_file_to_tmp_file(log_source)
+                delete_temp = True
+        elif log_source.endswith(&#39;.gz&#39;):
+                Debug(&#39;Reading gzip compressed logs from file &#39; + log_source)
+                source_file = open_gzip_file_to_tmp_file(log_source)
+                delete_temp = True
+        else:
+                Debug(&#39;Reading logs from file &#39; + log_source)
+                source_file = log_source
+
+        #Try to process file first
+        if source_file:
+                if os.path.exists(source_file) and os.access(source_file, os.R_OK):
+                        try:
+                                process_log_lines(source_file, log_source, fields, cl_args)
+                        except (FileNotFoundError, IOError):
+                                sys.stderr.write(&#34;Unable to open file &#34; + str(log_source) + &#39;, exiting.\n&#39;)
+                                raise
+                else:
+                        sys.stderr.write(&#34;Unable to open file &#34; + str(source_file) + &#39;, skipping.\n&#39;)
+
+        if close_temp:
+                tmp_log.close()
+
+        if delete_temp and source_file != log_source and os.path.exists(source_file):
+                os.remove(source_file)</code></pre>
+</details>
+</dd>
+<dt id="zcutter.process_log_lines"><code class="name flex">
+<span>def <span class="ident">process_log_lines</span></span>(<span>log_file: str, original_filename: str, requested_fields: List[str], cl_args: Dict) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Will process all the lines in an uncompressed log file.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def process_log_lines(log_file: str, original_filename: str, requested_fields: List[str], cl_args: Dict) -&gt; None:
+        &#34;&#34;&#34;Will process all the lines in an uncompressed log file.&#34;&#34;&#34;
+
+        if &#39;data_line_seen&#39; not in process_log_lines.__dict__:
+                process_log_lines.data_line_seen = False                                                # type: ignore
+
+        if &#39;tsv_headers_printed&#39; not in process_log_lines.__dict__:
+                process_log_lines.tsv_headers_printed = False                                           # type: ignore
+
+        in_file_format: str = &#39;&#39;
+        field_line_fields: List = []
+        type_line_fields: List = []
+        field_types: Dict = {}                                                                          #Dictionary whose keys are ALL field names and whose values are the corresponding field types.  This has all the field names, even when we limit the output to only certain fields.
+
+        field_location: Dict[str, int] = {}                                                             #Remembers in which column we can find a given field name.
+
+        Debug(&#34;Processing: &#34; + log_file)
+        log_h: Union[TextIO, None] = None
+        with open(log_file, &#39;r&#39;, encoding=&#39;utf8&#39;) as log_h:
+                output_h: Union[TextIO, None] = None
+                if cl_args[&#39;outputdir&#39;] and original_filename not in (&#39;-&#39;, &#39;&#39;, None):                   #If original_filename is one of these it&#39;s from stdin, so we don&#39;t create a handle and the output continues to go to stdout.
+                        output_filename = os.path.join(cl_args[&#39;outputdir&#39;], original_filename.replace(&#39;.gz&#39;, &#39;&#39;).replace(&#39;.bz2&#39;, &#39;&#39;))  #We&#39;re writing out uncompressed no matter what the input format was.
+                        if output_filename:
+                                if os.path.exists(output_filename):                                     # pylint: disable=no-else-return
+                                        Debug(output_filename + &#34; exists, late skipping.&#34;)
+                                        log_h.close()
+                                        return
+                                else:
+                                        mkdir_p(os.path.dirname(os.path.join(cl_args[&#39;outputdir&#39;], original_filename)))
+                                        output_h = open(output_filename, &#34;a+&#34;, encoding=&#34;utf8&#34;)         # pylint: disable=consider-using-with
+
+                limited_fields: List = []
+                file_path = &#39;&#39;                                                                          #The zeek record type, like &#34;dns&#34;, &#34;http&#34;.  In TSV, found on #path line, in json, in key &#34;_path&#34;
+                for _, raw_line in enumerate(log_h):                                                    #_ is the line count
+                        raw_line = raw_line.rstrip()
+                        if not in_file_format:
+                                #FIXME - handle case where stdin gets both TSV and json input lines
+                                if raw_line == r&#39;#separator \x09&#39;:                                      #Use raw string so python won&#39;t turn \x09 into an actual tab
+                                        in_file_format = &#39;tsv&#39;
+                                #elif raw_line == &#39;&#39;:                                                   #conn-summary files start with a blank line, but we&#39;ve skipped these already.
+                                #       pass
+                                elif raw_line.startswith(&#39;{&#39;):
+                                        in_file_format = &#39;json&#39;
+                                        field_dict_1 = json.loads(raw_line)
+                                        if &#34;_path&#34; in field_dict_1:
+                                                file_path = field_dict_1[&#34;_path&#34;]
+                                                del field_dict_1[&#34;_path&#34;]
+                                        if &#34;_write_ts&#34; in field_dict_1:
+                                                del field_dict_1[&#34;_write_ts&#34;]
+                                        if requested_fields == []:
+                                                limited_fields = list(field_dict_1.keys())
+                                        elif cl_args[&#39;negate&#39;]:
+                                                for one_field in field_dict_1.keys():
+                                                        if one_field not in requested_fields:
+                                                                limited_fields.append(one_field)
+                                        else:
+                                                for one_field in requested_fields:
+                                                        if one_field in field_dict_1.keys():
+                                                                limited_fields.append(one_field)
+                                elif raw_line.startswith(&#39;#separator&#39;):
+                                        sys.stderr.write(&#39;Unrecognized separator in &#39; + log_file + &#39; , skipping.\n&#39;)
+                                        return
+                                else:
+                                        sys.stderr.write(&#39;Unrecognized starting line in &#39; + log_file + &#39; , skipping.\n&#39;)
+                                        return
+
+
+                        if (cl_args[&#39;allheaders&#39;] or cl_args[&#39;allminheaders&#39;] or (cl_args[&#39;_one_hdr&#39;] and process_log_lines.data_line_seen is False)) and (cl_args[&#39;tsv&#39;] and in_file_format == &#39;json&#39; and process_log_lines.tsv_headers_printed is False):     # type: ignore # pylint: disable=too-many-boolean-expressions
+                                #We&#39;re inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
+                                print_sim_tsv_header(json.loads(raw_line), limited_fields, cl_args, output_h)
+
+                        out_line = &#39;&#39;
+                        if raw_line.startswith(&#39;#&#39;):
+                                #Process header lines
+                                if raw_line.startswith(&#39;#fields&#39;):
+                                        #read fields into dictionary (fieldname-&gt;adjusted column number)
+                                        field_location = {}
+                                        field_line_fields = raw_line.split(&#39;\t&#39;)[1:]                    #List of the fields in the #fields line.  We have to use [1:] to skip over &#39;#fields&#39;
+                                        for field_num, one_field in enumerate(field_line_fields):
+                                                field_location[one_field] = field_num
+                                        limited_fields = []
+                                        if requested_fields == []:
+                                                limited_fields = field_line_fields.copy()
+                                        elif cl_args[&#39;negate&#39;]:
+                                                for one_field in field_location:
+                                                        if one_field not in requested_fields:
+                                                                limited_fields.append(one_field)
+                                        else:
+                                                for one_field in requested_fields:
+                                                        if one_field in field_location:
+                                                                limited_fields.append(one_field)
+                                        out_line = cl_args[&#39;fieldseparator&#39;].join(limited_fields)
+                                        if not cl_args[&#39;_min_hdr&#39;]:                                     #Prepend &#34;#fields&#34; unless we&#39;re doing minimal headers
+                                                out_line = &#39;#fields&#39; + cl_args[&#39;fieldseparator&#39;] + out_line
+
+                                elif raw_line.startswith(&#39;#types&#39;):
+                                        type_list = [&#39;#types&#39;, ]
+                                        type_line_fields = raw_line.split(&#39;\t&#39;)[1:]                     #List of the fields in the #types line.  We have to use [1:] to skip over &#39;#types&#39;
+                                        if requested_fields == []:
+                                                type_list = raw_line.split(&#39;\t&#39;)                        #Grab everything, including the leading &#34;#types&#34;
+                                        elif not field_location:
+                                                #Fail case where #types shows up before #fields
+                                                fail(&#39;field_location is not set when attempting to process #types line: is there a chance #types showed up before #fields?&#39;)
+                                        elif cl_args[&#39;negate&#39;]:
+                                                for line_index, one_type in enumerate(type_line_fields):
+                                                        if line_index not in field_location.values():
+                                                                type_list.append(one_type)
+                                        else:
+                                                for one_label in requested_fields:
+                                                        field_index = field_location.get(one_label)
+                                                        if field_index is not None:
+                                                                type_list.append(type_line_fields[field_index])
+                                        if not cl_args[&#39;_min_hdr&#39;]:
+                                                out_line = cl_args[&#39;fieldseparator&#39;].join(type_list)
+                                elif raw_line.startswith(&#39;#path&#39;):
+                                        file_path = raw_line.split(&#39;\t&#39;)[1]
+                                        if not cl_args[&#39;_min_hdr&#39;]:
+                                                out_line = raw_line
+                                else:
+                                        if not cl_args[&#39;_min_hdr&#39;]:
+                                                out_line = raw_line
+
+                                if field_line_fields and type_line_fields and not field_types:
+                                        #Build the field_types dictionary
+                                        field_types = dict(zip(field_line_fields, type_line_fields))
+
+                                if not (cl_args[&#39;allheaders&#39;] or cl_args[&#39;allminheaders&#39;] or (cl_args[&#39;_one_hdr&#39;] and process_log_lines.data_line_seen is False)):      # type: ignore
+                                        out_line = &#39;&#39;
+                                if cl_args[&#39;json&#39;]:
+                                        out_line = &#39;&#39;
+                        else:
+                                process_log_lines.data_line_seen = True                                 # type: ignore
+                                #Process non-header lines
+                                if in_file_format == &#39;tsv&#39;:
+                                        if not field_location:
+                                                fail(&#34;Warning, field_location is not set as we enter live data lines&#34;)
+                                        #process tsv line
+                                        data_fields = raw_line.split(&#39;\t&#39;)
+                                        out_fields = []
+                                        #FIXME - handle case where no fields were requested.
+                                        for one_field in limited_fields:
+                                                try:
+                                                        field_in_string_format = data_fields[field_location[one_field]]
+                                                except IndexError:
+                                                        field_in_string_format = &#39;&#39;
+
+                                                #We _should_ have already built a field_types dictionary from the header fields.  If not, we fall back on the static one at the top of this program.
+                                                if cl_args[&#39;json&#39;]:
+                                                        out_fields.append(correct_var_format(field_in_string_format, one_field, file_path, field_types or static_field_types, cl_args))
+                                                else:
+                                                        if one_field == &#39;ts&#39; and cl_args[&#39;readabledate&#39;]:
+                                                                out_fields.append(datetime.datetime.fromtimestamp(float(field_in_string_format)).strftime(cl_args[&#39;dateformat&#39;]))
+                                                        else:
+                                                                out_fields.append(field_in_string_format)
+                                        out_line = data_line_of(limited_fields, out_fields, in_file_format, cl_args, file_path)
+                                elif in_file_format == &#39;json&#39;:
+                                        #Process json line
+                                        try:
+                                                field_dict_3 = json.loads(raw_line)
+                                                out_fields = []
+                                                for one_field in limited_fields:
+                                                        if requested_fields == [] or (one_field in field_dict_3) or (cl_args[&#39;negate&#39;] and one_field not in field_dict_3):
+                                                                #We _should_ have already built a field_types dictionary from the header fields.  If not, we fall back on the static one at the top of this program.
+                                                                if cl_args[&#39;tsv&#39;]:
+                                                                        if one_field == &#39;ts&#39; and cl_args[&#39;readabledate&#39;]:
+                                                                                out_fields.append(datetime.datetime.fromtimestamp(float(field_dict_3.get(one_field, 0.0))).strftime(cl_args[&#39;dateformat&#39;]))
+                                                                        else:
+                                                                                out_fields.append(str(field_dict_3.get(one_field, &#39;&#39;)))
+                                                                else:
+                                                                        out_fields.append(correct_var_format(str(field_dict_3.get(one_field, &#39;&#39;)), one_field, file_path, field_types or static_field_types, cl_args))
+                                                        else:
+                                                                out_fields.append(&#39;&#39;)
+
+                                                out_line = data_line_of(limited_fields, out_fields, in_file_format, cl_args, file_path)
+                                        except json.decoder.JSONDecodeError:
+                                                out_line = &#39;&#39;
+                                else:
+                                        fail(&#39;Unrecognized file format: &#39; + in_file_format)
+
+                        if out_line:
+                                print_line(out_line, output_h)
+
+                if output_h:
+                        output_h.close()
+                        relative_touch(original_filename, os.path.join(cl_args[&#39;outputdir&#39;], original_filename.replace(&#39;.gz&#39;, &#39;&#39;).replace(&#39;.bz2&#39;, &#39;&#39;)))
+
+        sys.stderr.flush()</code></pre>
+</details>
+</dd>
+<dt id="zcutter.relative_touch"><code class="name flex">
+<span>def <span class="ident">relative_touch</span></span>(<span>old_file: str, new_file_to_change: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Make the modification time and atime of new_file_to_change to be equal to those of old_file.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def relative_touch(old_file: str, new_file_to_change: str) -&gt; None:
+        &#34;&#34;&#34;Make the modification time and atime of new_file_to_change to be equal to those of old_file.&#34;&#34;&#34;
+
+        os.utime(new_file_to_change, ns=(os.stat(old_file).st_atime_ns, os.stat(old_file).st_mtime_ns))</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="zcutter.Debug" href="#zcutter.Debug">Debug</a></code></li>
+<li><code><a title="zcutter.correct_var_format" href="#zcutter.correct_var_format">correct_var_format</a></code></li>
+<li><code><a title="zcutter.create_simulated_headers" href="#zcutter.create_simulated_headers">create_simulated_headers</a></code></li>
+<li><code><a title="zcutter.data_line_of" href="#zcutter.data_line_of">data_line_of</a></code></li>
+<li><code><a title="zcutter.fail" href="#zcutter.fail">fail</a></code></li>
+<li><code><a title="zcutter.link_or_copy" href="#zcutter.link_or_copy">link_or_copy</a></code></li>
+<li><code><a title="zcutter.mkdir_p" href="#zcutter.mkdir_p">mkdir_p</a></code></li>
+<li><code><a title="zcutter.open_bzip2_file_to_tmp_file" href="#zcutter.open_bzip2_file_to_tmp_file">open_bzip2_file_to_tmp_file</a></code></li>
+<li><code><a title="zcutter.open_gzip_file_to_tmp_file" href="#zcutter.open_gzip_file_to_tmp_file">open_gzip_file_to_tmp_file</a></code></li>
+<li><code><a title="zcutter.print_line" href="#zcutter.print_line">print_line</a></code></li>
+<li><code><a title="zcutter.print_sim_tsv_header" href="#zcutter.print_sim_tsv_header">print_sim_tsv_header</a></code></li>
+<li><code><a title="zcutter.process_log" href="#zcutter.process_log">process_log</a></code></li>
+<li><code><a title="zcutter.process_log_lines" href="#zcutter.process_log_lines">process_log_lines</a></code></li>
+<li><code><a title="zcutter.relative_touch" href="#zcutter.relative_touch">relative_touch</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
