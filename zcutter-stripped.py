@@ -6,7 +6,7 @@
 
 #Dedicated to my colleague and friend, Chris Brenton.  Many thanks for all you have shared about understanding networks.
 
-__version__ = '1.0.12'
+__version__ = '1.0.14'
 
 __author__ = 'William Stearns'
 __copyright__ = 'Copyright 2023, William Stearns'
@@ -15,7 +15,6 @@ __email__ = 'william.l.stearns@gmail.com'
 __license__ = 'GPL 3.0'
 __maintainer__ = 'William Stearns'
 __status__ = 'Production'		#Prototype, Development or Production
-
 
 
 #======== External libraries
@@ -29,8 +28,7 @@ import json				#Reading json formatted files
 import errno				#For exceptions
 import zlib
 import shutil				#For file copies
-from typing import Dict, List, Union, TextIO
-
+from typing import Dict, List, Union, TextIO, Tuple
 
 
 #======== Constants
@@ -621,9 +619,9 @@ r"""#separator \x09
 static_field_types = {('ts', 'app_stats'): 'time', 'ts_delta': 'interval', 'app': 'string', 'uniq_hosts': 'count', 'hits': 'count', 'bytes': 'count', ('ts', 'broker'): 'time', 'ty': 'enum', 'ev': 'string', 'peer.address': 'string', 'peer.bound_port': 'port', 'message': 'string', ('ts', 'capture_loss'): 'time', 'peer': 'string', ('gaps', 'capture_loss'): 'count', ('acks', 'capture_loss'): 'count', 'percent_lost': 'double', ('ts', 'cluster'): 'time', 'node': 'string', ('ts', 'communication'): 'time', 'src_name': 'string', 'connected_peer_desc': 'string', 'connected_peer_addr': 'addr', 'connected_peer_port': 'port', ('level', 'communication'): 'string', '_node_name': 'string', ('ts', 'conn'): 'time', 'uid': 'string', 'id.orig_h': 'addr', 'id.orig_p': 'port', 'id.resp_h': 'addr', 'id.resp_p': 'port', ('proto', 'conn'): 'enum', ('service', 'conn'): 'string', 'duration': 'interval', 'orig_bytes': 'count', 'resp_bytes': 'count', 'conn_state': 'string', 'local_orig': 'bool', 'local_resp': 'bool', 'missed_bytes': 'count', 'history': 'string', 'orig_pkts': 'count', 'orig_ip_bytes': 'count', 'resp_pkts': 'count', 'resp_ip_bytes': 'count', 'tunnel_parents': 'set[string]', ('ts', 'conn_red'): 'time', ('proto', 'conn_red'): 'enum', ('service', 'conn_red'): 'string', 'orig_cc': 'string', 'resp_cc': 'string', 'orig_l2_addr': 'string', 'resp_l2_addr': 'string', 'vlan': 'int', 'inner_vlan': 'int', 'community_id': 'string', ('ts', 'corelight_burst'): 'time', ('proto', 'corelight_burst'): 'enum', 'orig_size': 'count', 'resp_size': 'count', 'mbps': 'double', 'age_of_conn': 'interval', ('ts', 'corelight_overall_capture_loss'): 'time', ('gaps', 'corelight_overall_capture_loss'): 'double', ('acks', 'corelight_overall_capture_loss'): 'double', ('ts', 'datared'): 'time', 'conn_red': 'count', 'conn_total': 'count', 'dns_red': 'count', 'dns_total': 'count', 'dns_coal_miss': 'count', 'files_red': 'count', 'files_total': 'count', 'files_coal_miss': 'count', 'http_red': 'count', 'http_total': 'count', 'ssl_red': 'count', 'ssl_total': 'count', 'ssl_coal_miss': 'count', 'weird_red': 'count', 'weird_total': 'count', 'x509_red': 'count', 'x509_total': 'count', 'x509_coal_miss': 'count', ('ts', 'dce_rpc'): 'time', 'rtt': 'interval', 'named_pipe': 'string', 'endpoint': 'string', 'operation': 'string', ('ts', 'dhcp'): 'time', 'uids': 'set[string]', 'client_addr': 'addr', 'server_addr': 'addr', 'mac': 'string', 'host_name': 'string', 'client_fqdn': 'string', 'domain': 'string', 'requested_addr': 'addr', 'assigned_addr': 'addr', 'lease_time': 'interval', 'client_message': 'string', 'server_message': 'string', 'msg_types': 'vector[string]', ('ts', 'dnp3'): 'time', 'fc_request': 'string', 'fc_reply': 'string', 'iin': 'count', ('ts', 'dns'): 'time', ('proto', 'dns'): 'enum', 'trans_id': 'count', 'query': 'string', 'qclass': 'count', 'qclass_name': 'string', 'qtype': 'count', 'qtype_name': 'string', 'rcode': 'count', 'rcode_name': 'string', 'AA': 'bool', 'TC': 'bool', 'RD': 'bool', 'RA': 'bool', 'Z': 'count', 'answers': 'vector[string]', 'TTLs': 'vector[interval]', 'rejected': 'bool', ('ts', 'dns_red'): 'time', 'num': 'count', ('ts', 'dpd'): 'time', ('proto', 'dpd'): 'enum', 'analyzer': 'string', 'failure_reason': 'string', 'server_a': 'addr', 'server_p': 'port', ('service', 'etc_viz'): 'set[string]', 'viz_stat': 'string', 'c2s_viz.size': 'count', 'c2s_viz.enc_dev': 'double', 'c2s_viz.enc_frac': 'double', 'c2s_viz.pdu1_enc': 'bool', 'c2s_viz.clr_frac': 'double', 'c2s_viz.clr_ex': 'string', 's2c_viz.size': 'count', 's2c_viz.enc_dev': 'double', 's2c_viz.enc_frac': 'double', 's2c_viz.pdu1_enc': 'bool', 's2c_viz.clr_frac': 'double', 's2c_viz.clr_ex': 'string', ('ts', 'files'): 'time', 'fuid': 'string', 'tx_hosts': 'set[addr]', 'rx_hosts': 'set[addr]', 'conn_uids': 'set[string]', 'source': 'string', 'depth': 'count', 'analyzers': 'set[string]', 'mime_type': 'string', 'filename': 'string', 'is_orig': 'bool', 'seen_bytes': 'count', 'total_bytes': 'count', 'missing_bytes': 'count', 'overflow_bytes': 'count', 'timedout': 'bool', 'parent_fuid': 'string', 'md5': 'string', 'sha1': 'string', 'sha256': 'string', ('extracted', 'files'): 'string', 'extracted_cutoff': 'bool', 'extracted_size': 'count', ('ts', 'files_red'): 'vector[time]', ('extracted', 'files_red'): 'set[string]', ('ts', 'ftp'): 'time', 'user': 'string', 'password': 'string', 'command': 'string', 'arg': 'string', 'file_size': 'count', 'reply_code': 'count', 'reply_msg': 'string', 'data_channel.passive': 'bool', 'data_channel.orig_h': 'addr', 'data_channel.resp_h': 'addr', 'data_channel.resp_p': 'port', ('ts', 'http'): 'time', 'trans_depth': 'count', 'method': 'string', ('host', 'http'): 'string', 'uri': 'string', 'referrer': 'string', ('version', 'http'): 'string', 'user_agent': 'string', 'origin': 'string', 'request_body_len': 'count', 'response_body_len': 'count', 'status_code': 'count', 'status_msg': 'string', 'info_code': 'count', 'info_msg': 'string', 'tags': 'set[enum]', 'username': 'string', 'proxied': 'set[string]', 'orig_fuids': 'vector[string]', 'orig_filenames': 'vector[string]', 'orig_mime_types': 'vector[string]', 'resp_fuids': 'vector[string]', 'resp_filenames': 'vector[string]', 'resp_mime_types': 'vector[string]', ('ts', 'http_red'): 'time', ('host', 'http_red'): 'string', ('version', 'http_red'): 'string', 'post_body': 'string', ('ts', 'intel'): 'time', 'seen.indicator': 'string', 'seen.indicator_type': 'enum', 'seen.where': 'enum', 'matched': 'set[enum]', 'sources': 'set[string]', 'file_mime_type': 'string', 'file_desc': 'string', ('ts', 'irc'): 'time', 'nick': 'string', 'value': 'string', 'addl': 'string', 'dcc_file_name': 'string', 'dcc_file_size': 'count', 'dcc_mime_type': 'string', ('ts', 'kerberos'): 'time', 'request_type': 'string', 'client': 'string', ('service', 'kerberos'): 'string', 'success': 'bool', 'error_msg': 'string', ('from', 'kerberos'): 'time', 'till': 'time', 'cipher': 'string', 'forwardable': 'bool', 'renewable': 'bool', 'client_cert_subject': 'string', 'client_cert_fuid': 'string', 'server_cert_subject': 'string', 'server_cert_fuid': 'string', ('ts', 'known_certs'): 'time', ('host', 'known_certs'): 'addr', 'port_num': 'port', 'subject': 'string', 'issuer_subject': 'string', 'serial': 'string', ('ts', 'known_hosts'): 'time', ('host', 'known_hosts'): 'addr', ('ts', 'known_services'): 'time', ('host', 'known_services'): 'addr', 'port_proto': 'enum', ('service', 'known_services'): 'set[string]', ('ts', 'modbus'): 'time', 'func': 'string', 'exception': 'string', ('ts', 'mqtt_connect'): 'time', 'proto_name': 'string', 'proto_version': 'string', 'client_id': 'string', 'connect_status': 'string', 'will_topic': 'string', 'will_payload': 'string', ('ts', 'mqtt_publish'): 'time', 'from_client': 'bool', 'retain': 'bool', 'qos': 'string', 'status': 'string', 'topic': 'string', 'payload': 'string', 'payload_len': 'count', ('ts', 'mqtt_subscribe'): 'time', 'action': 'enum', 'topics': 'vector[string]', 'qos_levels': 'vector[count]', 'granted_qos_level': 'count', 'ack': 'bool', ('ts', 'mysql'): 'time', 'cmd': 'string', 'rows': 'count', 'response': 'string', ('ts', 'namecache'): 'time', 'lookups': 'count', 'hit_rate_conn': 'double', 'hit_rate_conn_orig_h': 'double', 'hit_rate_conn_resp_h': 'double', 'hit_rate_conn_prod': 'double', 'hit_rate_conn_prod_orig_h': 'double', 'hit_rate_conn_prod_resp_h': 'double', 'hit_rate_conn_int_h': 'double', 'hit_rate_conn_ext_h': 'double', 'src_dns_a': 'count', 'src_dns_aaaa': 'count', 'src_dns_a6': 'count', 'src_dns_ptr': 'count', 'src_unknown': 'count', 'cache_entries': 'count', 'cache_add_tx_ev': 'count', 'cache_add_tx_mpg': 'count', 'cache_add_rx_ev': 'count', 'cache_add_rx_mpg': 'count', 'cache_add_rx_new': 'count', 'cache_del_mpg': 'count', ('ts', 'notice'): 'time', ('proto', 'notice'): 'enum', 'note': 'enum', 'msg': 'string', 'sub': 'string', 'src': 'addr', 'dst': 'addr', 'p': 'port', 'n': 'count', 'peer_descr': 'string', 'actions': 'set[enum]', 'email_dest': 'set[string]', 'suppress_for': 'interval', 'remote_location.country_code': 'string', 'remote_location.region': 'string', 'remote_location.city': 'string', 'remote_location.latitude': 'double', 'remote_location.longitude': 'double', ('ts', 'ntlm'): 'time', 'hostname': 'string', 'domainname': 'string', 'server_nb_computer_name': 'string', 'server_dns_computer_name': 'string', 'server_tree_name': 'string', ('ts', 'ntp'): 'time', ('version', 'ntp'): 'count', 'mode': 'count', 'stratum': 'count', 'poll': 'interval', 'precision': 'interval', 'root_delay': 'interval', 'root_disp': 'interval', 'ref_id': 'string', 'ref_time': 'time', 'org_time': 'time', 'rec_time': 'time', 'xmt_time': 'time', 'num_exts': 'count', ('ts', 'ocsp'): 'time', 'id': 'string', 'hashAlgorithm': 'string', 'issuerNameHash': 'string', 'issuerKeyHash': 'string', 'serialNumber': 'string', 'certStatus': 'string', 'revoketime': 'time', 'revokereason': 'string', 'thisUpdate': 'time', 'nextUpdate': 'time', ('ts', 'open_conn'): 'time', ('proto', 'open_conn'): 'enum', ('service', 'open_conn'): 'string', ('ts', 'packet_filter'): 'time', 'filter': 'string', 'init': 'bool', ('ts', 'pe'): 'time', 'machine': 'string', 'compile_ts': 'time', 'os': 'string', 'subsystem': 'string', 'is_exe': 'bool', 'is_64bit': 'bool', 'uses_aslr': 'bool', 'uses_dep': 'bool', 'uses_code_integrity': 'bool', 'uses_seh': 'bool', 'has_import_table': 'bool', 'has_export_table': 'bool', 'has_cert_table': 'bool', 'has_debug_data': 'bool', 'section_names': 'vector[string]', ('ts', 'radius'): 'time', 'framed_addr': 'addr', 'remote_ip': 'addr', 'connect_info': 'string', 'result': 'string', 'ttl': 'interval', ('ts', 'rdp'): 'time', 'cookie': 'string', 'security_protocol': 'string', 'keyboard_layout': 'string', 'client_build': 'string', 'client_name': 'string', 'client_dig_product_id': 'string', 'desktop_width': 'count', 'desktop_height': 'count', 'requested_color_depth': 'string', 'cert_type': 'string', 'cert_count': 'count', 'cert_permanent': 'bool', 'encryption_level': 'string', 'encryption_method': 'string', ('ts', 'reporter'): 'time', ('level', 'reporter'): 'enum', 'location': 'string', ('ts', 'rfb'): 'time', 'client_major_version': 'string', 'client_minor_version': 'string', 'server_major_version': 'string', 'server_minor_version': 'string', 'authentication_method': 'string', 'auth': 'bool', 'share_flag': 'bool', 'desktop_name': 'string', 'width': 'count', 'height': 'count', ('ts', 'signatures'): 'time', 'src_addr': 'addr', 'src_port': 'port', 'dst_addr': 'addr', 'dst_port': 'port', 'sig_id': 'string', 'event_msg': 'string', 'sub_msg': 'string', 'sig_count': 'count', 'host_count': 'count', ('ts', 'sip'): 'time', 'date': 'string', 'request_from': 'string', 'request_to': 'string', 'response_from': 'string', 'response_to': 'string', 'reply_to': 'string', 'call_id': 'string', 'seq': 'string', 'request_path': 'vector[string]', 'response_path': 'vector[string]', 'warning': 'string', 'content_type': 'string', ('ts', 'smb_files'): 'time', ('path', 'smb_files'): 'string', 'name': 'string', 'size': 'count', 'prev_name': 'string', 'times.modified': 'time', 'times.accessed': 'time', 'times.created': 'time', 'times.changed': 'time', 'data_offset_req': 'count', 'data_len_req': 'count', 'data_len_rsp': 'count', ('ts', 'smb_mapping'): 'time', ('path', 'smb_mapping'): 'string', ('service', 'smb_mapping'): 'string', 'native_file_system': 'string', 'share_type': 'string', ('ts', 'smtp'): 'time', 'helo': 'string', 'mailfrom': 'string', 'rcptto': 'set[string]', ('from', 'smtp'): 'string', 'to': 'set[string]', 'cc': 'set[string]', 'msg_id': 'string', 'in_reply_to': 'string', 'x_originating_ip': 'addr', 'first_received': 'string', 'second_received': 'string', 'last_reply': 'string', ('path', 'smtp'): 'vector[addr]', 'tls': 'bool', 'fuids': 'vector[string]', 'is_webmail': 'bool', ('ts', 'snmp'): 'time', ('version', 'snmp'): 'string', 'community': 'string', 'get_requests': 'count', 'get_bulk_requests': 'count', 'get_responses': 'count', 'set_requests': 'count', 'display_string': 'string', 'up_since': 'time', ('ts', 'socks'): 'time', ('version', 'socks'): 'count', 'request.host': 'addr', 'request.name': 'string', 'request_p': 'port', 'bound.host': 'addr', 'bound.name': 'string', 'bound_p': 'port', ('ts', 'software'): 'time', ('host', 'software'): 'addr', 'host_p': 'port', 'software_type': 'enum', 'version.major': 'count', 'version.minor': 'count', 'version.minor2': 'count', 'version.minor3': 'count', 'version.addl': 'string', 'unparsed_version': 'string', ('ts', 'ssh'): 'time', ('version', 'ssh'): 'count', 'auth_success': 'bool', 'auth_attempts': 'count', 'direction': 'enum', 'server': 'string', 'cipher_alg': 'string', 'mac_alg': 'string', 'compression_alg': 'string', 'kex_alg': 'string', 'host_key_alg': 'string', 'host_key': 'string', ('ts', 'ssl'): 'time', ('version', 'ssl'): 'string', 'curve': 'string', 'server_name': 'string', 'resumed': 'bool', 'last_alert': 'string', 'next_protocol': 'string', 'established': 'bool', 'ssl_history': 'string', 'cert_chain_fps': 'vector[string]', 'client_cert_chain_fps': 'vector[string]', 'sni_matches_cert': 'bool', 'validation_status': 'string', 'ja3': 'string', 'ja3s': 'string', ('ts', 'ssl_red'): 'time', ('version', 'ssl_red'): 'string', 'cert_chain_fuids': 'vector[string]', 'client_cert_chain_fuids': 'vector[string]', 'issuer': 'string', 'client_subject': 'string', 'client_issuer': 'string', ('ts', 'stats'): 'time', 'mem': 'count', 'pkts_proc': 'count', 'bytes_recv': 'count', 'pkts_dropped': 'count', 'pkts_link': 'count', 'pkt_lag': 'interval', 'events_proc': 'count', 'events_queued': 'count', 'active_tcp_conns': 'count', 'active_udp_conns': 'count', 'active_icmp_conns': 'count', 'tcp_conns': 'count', 'udp_conns': 'count', 'icmp_conns': 'count', 'timers': 'count', 'active_timers': 'count', 'files': 'count', 'active_files': 'count', 'dns_requests': 'count', 'active_dns_requests': 'count', 'reassem_tcp_size': 'count', 'reassem_file_size': 'count', 'reassem_frag_size': 'count', 'reassem_unknown_size': 'count', ('ts', 'syslog'): 'time', ('proto', 'syslog'): 'enum', 'facility': 'string', 'severity': 'string', ('ts', 'traceroute'): 'time', ('proto', 'traceroute'): 'string', ('ts', 'tunnel'): 'time', 'tunnel_type': 'enum', ('ts', 'weird'): 'time', 'notice': 'bool', ('ts', 'weird_red'): 'time', ('ts', 'x509'): 'time', 'fingerprint': 'string', 'certificate.version': 'count', 'certificate.serial': 'string', 'certificate.subject': 'string', 'certificate.issuer': 'string', 'certificate.not_valid_before': 'time', 'certificate.not_valid_after': 'time', 'certificate.key_alg': 'string', 'certificate.sig_alg': 'string', 'certificate.key_type': 'string', 'certificate.key_length': 'count', 'certificate.exponent': 'string', 'certificate.curve': 'string', 'san.dns': 'vector[string]', 'san.uri': 'vector[string]', 'san.email': 'vector[string]', 'san.ip': 'vector[addr]', 'basic_constraints.ca': 'bool', 'basic_constraints.path_len': 'count', 'host_cert': 'bool', 'client_cert': 'bool', ('ts', 'x509_red'): 'time'}
 
 
-
 skip_log_prefix = ('LICENSE', 'README', '.capture_loss.', '.capture_loss_', '.conn.', '.conn_', '.dns.', '.dns_', '.env_vars', '.http.', '.http_', '.known_certs.', '.known_certs_', '.notice.', '.notice_', '.ntlm.', '.ntlm_', '.rotated.', '.ssl.', '.ssl_', '.stats.', '.stats_', '.x509.', '.x509_', '.startup', '.cmdline', '.pid', 'conn-summary', 'stderr', 'stdout')		#Note, the following are actual zeek logs: capture_loss, files, loaded_scripts, notice, packet_filter, stats, weird
 skip_log_suffix = ('.pcap', '.tar.gz', '.tar', '.zip', '.zng', '.zng.gz')				#.log.gz is TSV, .zson.gz is json, .ndjson.gz is NL-delimited json, and .zng is a zed special format
+
 
 #======== Functions
 def create_simulated_headers():
@@ -772,7 +770,7 @@ def open_gzip_file_to_tmp_file(gzip_filename):
 	return tmp_path
 
 
-def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_file_path:str):
+def data_line_of(field_name_list, field_value_list, input_type, cl_args, zeek_file_path):
 	"""Provide a formatted output line from the raw data fields."""
 
 	if not zeek_file_path:
@@ -825,8 +823,6 @@ def print_sim_tsv_header(line_dict, requested_fields, cl_args, output_h):
 	else:
 		fail("_path missing from first json record.")
 
-	process_log_lines.tsv_headers_printed = True							# type: ignore
-
 
 def correct_var_format(field_str_value, this_field_name, this_file_path, correct_field_types, cl_args):
 	"""Json requires numbers (ints and floats) and boolean values to be
@@ -875,8 +871,7 @@ def process_log_lines(log_file, original_filename, requested_fields, cl_args):
 	if 'data_line_seen' not in process_log_lines.__dict__:
 		process_log_lines.data_line_seen = False						# type: ignore
 
-	if 'tsv_headers_printed' not in process_log_lines.__dict__:
-		process_log_lines.tsv_headers_printed = False						# type: ignore
+	tsv_headers_printed = False
 
 	in_file_format = ''
 	field_line_fields = []
@@ -890,7 +885,7 @@ def process_log_lines(log_file, original_filename, requested_fields, cl_args):
 	with open(log_file, 'r', encoding='utf8') as log_h:
 		output_h = None
 		if cl_args['outputdir'] and original_filename not in ('-', '', None):			#If original_filename is one of these it's from stdin, so we don't create a handle and the output continues to go to stdout.
-			output_filename = os.path.join(cl_args['outputdir'], original_filename.replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
+			output_filename = os.path.join(cl_args['outputdir'], original_filename.replace('.gz', '').replace('.bz2', ''))		#We're writing out uncompressed no matter what the input format was.
 			if output_filename:
 				if os.path.exists(output_filename):					# pylint: disable=no-else-return
 					Debug(output_filename + " exists, late skipping.")
@@ -935,10 +930,10 @@ def process_log_lines(log_file, original_filename, requested_fields, cl_args):
 					sys.stderr.write('Unrecognized starting line in ' + log_file + ' , skipping.\n')
 					return
 
-
-			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and in_file_format == 'json' and process_log_lines.tsv_headers_printed is False):	# type: ignore # pylint: disable=too-many-boolean-expressions
+			if (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)) and (cl_args['tsv'] and in_file_format == 'json' and tsv_headers_printed is False):		# type: ignore # pylint: disable=too-many-boolean-expressions
 				#We're inputting json and forcing TSV output.  Now we have to print simulated TSV headers.
 				print_sim_tsv_header(json.loads(raw_line), limited_fields, cl_args, output_h)
+				tsv_headers_printed = True
 
 			out_line = ''
 			if raw_line.startswith('#'):
@@ -995,7 +990,7 @@ def process_log_lines(log_file, original_filename, requested_fields, cl_args):
 					#Build the field_types dictionary
 					field_types = dict(zip(field_line_fields, type_line_fields))
 
-				if not (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)):	# type: ignore
+				if not (cl_args['allheaders'] or cl_args['allminheaders'] or (cl_args['_one_hdr'] and process_log_lines.data_line_seen is False)):		# type: ignore
 					out_line = ''
 				if cl_args['json']:
 					out_line = ''
@@ -1076,21 +1071,20 @@ def link_or_copy(source_dirname, source_basename, destdir, dest_relative_file):
 			Debug("Unable to create " + destdir + " , skipping " + complete_source)
 			return
 
-
 	if os.path.isdir(destdir) and os.access(destdir, os.W_OK):
 		complete_dest = os.path.join(destdir, dest_relative_file)
 		if os.path.exists(complete_dest):
 			Debug('Skipping copy of ' + complete_source + ' as it already exists in ' + destdir)
 		else:
 			try:
-				os.link(complete_source, complete_dest, follow_symlinks=False)			#Don't follow symlinks as these may point to sensitive files outside the log tree.
+				os.link(complete_source, complete_dest, follow_symlinks=False)		#Don't follow symlinks as these may point to sensitive files outside the log tree.
 				#No need to adjust timestamp as hardlinks share the underlying timestamps
 			except OSError:
 				#Debug('Unable to hardlink, so we will do a file copy instead')
 				try:
-					shutil.copy2(complete_source, complete_dest, follow_symlinks=False)	#Copy the file, preserving metadata if possible
+					shutil.copy2(complete_source, complete_dest, follow_symlinks=False)		#Copy the file, preserving metadata if possible
 					relative_touch(complete_source, complete_dest)
-				except:										# pylint: disable=bare-except
+				except:									# pylint: disable=bare-except
 					Debug('Unable to link or copy ' + complete_source + ' to ' + destdir + ' , skipping.')
 
 
@@ -1108,7 +1102,7 @@ def process_log(log_source, fields, cl_args):
 		source_basename = ''
 
 	if log_source not in ('-', '', None) and cl_args['outputdir']:
-		output_filename = os.path.join(cl_args['outputdir'], log_source.replace('.gz', '').replace('.bz2', ''))	#We're writing out uncompressed no matter what the input format was.
+		output_filename = os.path.join(cl_args['outputdir'], log_source.replace('.gz', '').replace('.bz2', ''))		#We're writing out uncompressed no matter what the input format was.
 		if output_filename and os.path.exists(output_filename):
 			Debug(output_filename + " exists, skipping.")
 			return
@@ -1123,8 +1117,8 @@ def process_log(log_source, fields, cl_args):
 		close_temp = True
 	elif not os.path.exists(log_source):
 		Debug('Skipping nonexistent file ' + log_source)
-	#Set up source packet file; next 2 sections check for and handle compressed file extensions first, then final "else" treats the source as an uncompressed log file
-	elif source_basename.startswith(skip_log_prefix) or source_basename.endswith(skip_log_suffix):	#Log files that are not TSV/json formatted log files
+	#Set up source log file; next 2 sections check for and handle compressed file extensions first, then final "else" treats the source as an uncompressed log file
+	elif source_basename.startswith(skip_log_prefix) or source_basename.endswith(skip_log_suffix):		#Log files that are not TSV/json formatted log files
 		Debug("Linking or copying non-TSV/json file " + log_source)
 		if cl_args['outputdir']:
 			#Make a hardlink to the file if possible (or copy if not) in the output directory
